@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>作业看板 · 动态同步 + 智能转换器</title>
-    <!-- Google Font & Font Awesome -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -49,7 +48,7 @@
         }
         .header p {
             color: #475569;
-            margin-top: 0.5rem;
+            margin-top: 0.8rem;
             font-weight: 500;
         }
         body.dark .header p {
@@ -83,26 +82,30 @@
         .filter-btn {
             background: transparent;
             border: none;
-            padding: 0.4rem 1rem;
+            padding: 0.5rem 1.2rem;
             border-radius: 2rem;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
             font-family: inherit;
-            color: #334155;
+            color: #475569;
         }
         body.dark .filter-btn {
             color: #cbd5e1;
         }
+        .filter-btn:hover {
+            background: rgba(59,130,246,0.1);
+            color: #3b82f6;
+        }
         .filter-btn.active {
             background: #3b82f6;
             color: white;
-            box-shadow: 0 2px 8px rgba(59,130,246,0.3);
+            box-shadow: 0 4px 12px rgba(59,130,246,0.3);
         }
         .refresh-btn {
             background: #3b82f6;
             border: none;
-            padding: 0.5rem 1.2rem;
+            padding: 0.6rem 1.4rem;
             border-radius: 2rem;
             color: white;
             font-weight: 600;
@@ -110,11 +113,16 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            transition: 0.2s;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(59,130,246,0.25);
         }
         .refresh-btn:hover {
             background: #2563eb;
-            transform: scale(0.97);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(59,130,246,0.35);
+        }
+        .refresh-btn:active {
+            transform: translateY(0);
         }
 
         /* 统计卡片 */
@@ -125,42 +133,63 @@
             margin-bottom: 2rem;
         }
         .stat-card {
+            flex: 1;
+            min-width: 200px;
             background: white;
             border-radius: 1.5rem;
-            padding: 0.8rem 1.6rem;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            padding: 1.2rem 1.6rem;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.04);
             display: flex;
             align-items: center;
-            gap: 1rem;
-            border: 1px solid #e2e8f0;
+            gap: 1.2rem;
+            border: 1px solid #f1f5f9;
+            transition: transform 0.2s;
         }
         body.dark .stat-card {
             background: #1e293b;
             border-color: #334155;
         }
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
         .stat-icon {
-            font-size: 1.8rem;
+            font-size: 2.2rem;
             color: #3b82f6;
+            background: #eff6ff;
+            padding: 1rem;
+            border-radius: 1rem;
+        }
+        body.dark .stat-icon {
+            background: #0f172a;
         }
         .stat-info h3 {
-            font-size: 1.1rem;
-            font-weight: 500;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 0.3rem;
+        }
+        body.dark .stat-info h3 {
+            color: #94a3b8;
         }
         .stat-number {
-            font-size: 1.8rem;
+            font-size: 2rem;
             font-weight: 800;
             line-height: 1;
+            color: #0f172a;
+        }
+        body.dark .stat-number {
+            color: #f8fafc;
         }
 
-        /* 转换器卡片 (新增样式) */
+        /* 转换器卡片 */
         .converter-card {
             background: rgba(255,255,255,0.75);
             backdrop-filter: blur(8px);
             border-radius: 1.8rem;
-            padding: 1.5rem;
+            padding: 1.8rem;
             margin-bottom: 2.5rem;
-            border: 1px solid rgba(255,255,255,0.6);
-            box-shadow: 0 12px 24px -12px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.8);
+            box-shadow: 0 12px 24px -12px rgba(0,0,0,0.08);
             transition: all 0.2s;
         }
         body.dark .converter-card {
@@ -172,7 +201,8 @@
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            margin-bottom: 1rem;
+            margin-bottom: 1.2rem;
+            gap: 1rem;
         }
         .converter-header h3 {
             font-weight: 700;
@@ -181,18 +211,37 @@
             background-clip: text;
             -webkit-background-clip: text;
             color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .magic-badge {
+            font-size: 0.8rem;
+            background: #eef2ff;
+            color: #4f46e5;
+            padding: 0.4rem 1rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        body.dark .magic-badge {
+            background: #312e81;
+            color: #c7d2fe;
         }
         .converter-textarea {
             width: 100%;
-            padding: 1rem;
+            padding: 1.2rem;
             border-radius: 1.2rem;
-            border: 1px solid #cbd5e1;
+            border: 2px solid #e2e8f0;
             background: rgba(255,255,255,0.9);
             font-family: 'Inter', monospace;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
+            line-height: 1.5;
             resize: vertical;
             outline: none;
-            transition: 0.2s;
+            transition: all 0.2s ease;
         }
         body.dark .converter-textarea {
             background: #0f172a;
@@ -201,76 +250,100 @@
         }
         .converter-textarea:focus {
             border-color: #3b82f6;
-            box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
+            box-shadow: 0 0 0 4px rgba(59,130,246,0.15);
         }
         .btn-group {
             display: flex;
             gap: 1rem;
             flex-wrap: wrap;
-            margin: 1rem 0;
+            margin: 1.2rem 0;
         }
         .btn-convert {
             background: #6366f1;
+            box-shadow: 0 4px 12px rgba(99,102,241,0.3);
         }
         .btn-convert:hover {
             background: #4f46e5;
         }
         .btn-copy {
             background: #10b981;
+            box-shadow: 0 4px 12px rgba(16,185,129,0.3);
         }
         .btn-copy:hover {
             background: #059669;
         }
         .btn-example {
             background: transparent;
-            border: 1px solid #94a3b8;
-            color: #334155;
+            border: 2px solid #cbd5e1;
+            color: #475569;
+            box-shadow: none;
         }
         body.dark .btn-example {
             color: #cbd5e1;
-            border-color: #64748b;
+            border-color: #475569;
         }
         .btn-example:hover {
-            background: rgba(59,130,246,0.2);
+            background: rgba(59,130,246,0.05);
             border-color: #3b82f6;
+            color: #3b82f6;
         }
         .json-result {
-            background: rgba(0,0,0,0.05);
+            background: rgba(0,0,0,0.03);
             border-radius: 1rem;
-            padding: 1rem;
-            margin-top: 0.5rem;
+            padding: 1.2rem;
+            margin-top: 0.8rem;
+            border: 1px solid #e2e8f0;
         }
         body.dark .json-result {
             background: #0f172a;
+            border-color: #334155;
         }
         #jsonPreview {
             margin: 0;
             font-family: 'Monaco', 'Menlo', 'Cascadia Code', monospace;
-            font-size: 0.8rem;
+            font-size: 0.9rem;
             white-space: pre-wrap;
             word-break: break-all;
-            color: #0f172a;
+            color: #334155;
         }
         body.dark #jsonPreview {
             color: #cbd5e6;
         }
+        .format-hint {
+            font-size: 0.8rem;
+            margin-top: 0.8rem;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        body.dark .format-hint {
+            color: #94a3b8;
+        }
+
         .copy-toast {
             position: fixed;
-            bottom: 20px;
+            bottom: 30px;
             left: 50%;
-            transform: translateX(-50%);
+            transform: translateX(-50%) translateY(20px);
             background: #1e293b;
             color: white;
-            padding: 8px 20px;
+            padding: 10px 24px;
             border-radius: 40px;
-            font-size: 0.85rem;
+            font-size: 0.95rem;
             z-index: 999;
             opacity: 0;
-            transition: opacity 0.2s;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             pointer-events: none;
             backdrop-filter: blur(8px);
             font-weight: 500;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
+        .copy-toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
         /* 作业网格 */
         .homework-grid {
             display: grid;
@@ -282,24 +355,27 @@
             background: rgba(255,255,255,0.85);
             backdrop-filter: blur(4px);
             border-radius: 1.8rem;
-            padding: 1.5rem;
-            transition: all 0.25s ease;
+            padding: 1.6rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border: 1px solid rgba(255,255,255,0.6);
-            box-shadow: 0 12px 24px -12px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 25px -10px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
         }
         body.dark .homework-card {
             background: rgba(30,41,59,0.8);
             border-color: #334155;
         }
         .homework-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 20px 30px -12px rgba(0,0,0,0.2);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 35px -12px rgba(59,130,246,0.15);
+            border-color: rgba(59,130,246,0.3);
         }
         .card-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 1rem;
+            margin-bottom: 1.2rem;
         }
         .subject {
             font-size: 1.5rem;
@@ -308,32 +384,35 @@
             background-clip: text;
             -webkit-background-clip: text;
             color: transparent;
+            line-height: 1.2;
         }
         .status-badge {
             background: #f97316;
-            padding: 0.2rem 0.8rem;
+            padding: 0.3rem 0.8rem;
             border-radius: 2rem;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             font-weight: 600;
             color: white;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 10px rgba(249,115,22,0.2);
         }
         .status-badge.completed {
             background: #10b981;
+            box-shadow: 0 4px 10px rgba(16,185,129,0.2);
         }
         .homework-name {
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             font-weight: 600;
-            margin: 0.75rem 0 0.5rem;
-            line-height: 1.4;
+            margin: 0 0 1rem 0;
+            line-height: 1.5;
+            flex-grow: 1;
         }
         .detail {
             display: flex;
             flex-direction: column;
-            gap: 0.6rem;
-            margin-top: 1rem;
+            gap: 0.8rem;
             border-top: 1px dashed #cbd5e1;
-            padding-top: 1rem;
+            padding-top: 1.2rem;
         }
         body.dark .detail {
             border-top-color: #475569;
@@ -341,53 +420,110 @@
         .detail-item {
             display: flex;
             align-items: center;
-            gap: 0.7rem;
-            font-size: 0.85rem;
+            gap: 0.8rem;
+            font-size: 0.9rem;
             color: #475569;
+            font-weight: 500;
         }
         body.dark .detail-item {
             color: #cbd5e1;
         }
         .detail-item i {
             width: 1.4rem;
+            text-align: center;
             color: #3b82f6;
+            font-size: 1rem;
         }
         .deadline {
-            margin-top: 0.6rem;
-            font-size: 0.75rem;
+            margin-top: 0.8rem;
+            font-size: 0.8rem;
             background: #eef2ff;
-            display: inline-block;
-            padding: 0.2rem 0.8rem;
+            color: #4f46e5;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 1rem;
             border-radius: 1rem;
-            font-weight: 500;
+            font-weight: 600;
+            align-self: flex-start;
         }
         body.dark .deadline {
             background: #2d3a5e;
+            color: #c7d2fe;
+        }
+
+        /* 状态与错误信息占据全宽 */
+        .full-width-msg {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 2.5rem;
+            border-radius: 1.5rem;
         }
         .loading {
-            text-align: center;
-            padding: 3rem;
             font-size: 1.2rem;
             color: #3b82f6;
+            background: rgba(255,255,255,0.5);
+            backdrop-filter: blur(4px);
+        }
+        body.dark .loading {
+            background: rgba(30,41,59,0.5);
         }
         .error-message {
             background: #fee2e2;
             color: #b91c1c;
+            border: 1px solid #f87171;
+            font-weight: 500;
+            font-size: 1.1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        body.dark .error-message {
+            background: rgba(185,28,28,0.1);
+            border-color: #991b1b;
+            color: #fca5a5;
+        }
+        .warning-message {
+            background: #fef3c7;
+            color: #b45309;
+            border: 1px solid #fbbf24;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
             padding: 1rem;
             border-radius: 1rem;
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
+        body.dark .warning-message {
+            background: rgba(245,158,11,0.1);
+            border-color: #b45309;
+            color: #fcd34d;
+        }
+
         footer {
             text-align: center;
-            margin-top: 3rem;
-            font-size: 0.8rem;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e2e8f0;
+            font-size: 0.85rem;
             color: #64748b;
+            line-height: 1.6;
         }
-        @media (max-width: 680px) {
-            body { padding: 1rem; }
+        body.dark footer {
+            border-top-color: #334155;
+            color: #94a3b8;
+        }
+        @media (max-width: 768px) {
+            body { padding: 1.5rem 1rem; }
             .controls { flex-direction: column; align-items: stretch; }
+            .filter-group { justify-content: center; }
             .btn-group { justify-content: stretch; }
             .btn-group button { flex: 1; justify-content: center; }
+            .stats { flex-direction: column; }
+            .stat-card { width: 100%; }
         }
     </style>
 </head>
@@ -413,45 +549,43 @@
         <div class="stat-card"><i class="fas fa-check-circle stat-icon"></i><div class="stat-info"><h3>已完成</h3><span class="stat-number" id="completedCount">0</span></div></div>
     </div>
 
-    <!-- ========= 新增：作业文本转换助手 ========= -->
     <div class="converter-card">
         <div class="converter-header">
             <h3><i class="fas fa-exchange-alt"></i> 作业文本转换助手</h3>
-            <span style="font-size: 0.75rem; background: #eef2ff; padding: 0.2rem 0.8rem; border-radius: 2rem;"><i class="fas fa-magic"></i> 智能解析 → JSON</span>
+            <span class="magic-badge"><i class="fas fa-magic"></i> 智能解析 → JSON</span>
         </div>
-        <textarea id="inputHomeworkText" class="converter-textarea" rows="6" placeholder="粘贴以下格式的作业信息：&#10;&#10;嵌入式系统&#10;#作业/作业详情/未完成&#10;作业：控制海龟移动&#10;平台：学习通&#10;开始日期：3.13&#10;结束日期：暂定"></textarea>
+        <textarea id="inputHomeworkText" class="converter-textarea" rows="6" placeholder="请在此粘贴作业信息。支持包含 科目、状态、作业名称、平台、开始日期、结束日期 的纯文本内容。"></textarea>
         <div class="btn-group">
             <button id="convertBtn" class="refresh-btn btn-convert"><i class="fas fa-code"></i> 转换为JSON</button>
             <button id="copyJsonBtn" class="refresh-btn btn-copy"><i class="fas fa-copy"></i> 复制JSON</button>
-            <button id="exampleBtn" class="filter-btn btn-example"><i class="fas fa-arrow-down"></i> 填充示例</button>
+            <button id="exampleBtn" class="refresh-btn btn-example"><i class="fas fa-arrow-down"></i> 填充示例</button>
         </div>
         <div class="json-result">
-            <pre id="jsonPreview" style="margin:0; font-family: monospace; font-size:0.85rem; white-space: pre-wrap; word-break:break-all;">⚡ 点击「转换为JSON」生成结构化数据</pre>
+            <pre id="jsonPreview">⚡ 等待输入文本进行转换...</pre>
         </div>
-        <div style="font-size:0.7rem; margin-top:0.5rem; opacity:0.7;"><i class="fas fa-info-circle"></i> 支持格式：科目/状态行(#作业/作业详情/未完成 或 状态：未完成) + 作业/平台/起止日期</div>
+        <div class="format-hint"><i class="fas fa-info-circle"></i> 支持格式：科目/状态行(#作业/作业详情/未完成 或 状态：未完成) + 作业/平台/起止日期</div>
     </div>
 
+    <div id="warningContainer"></div>
+
     <div id="homeworkContainer" class="homework-grid">
-        <div class="loading"><i class="fas fa-spinner fa-pulse"></i> 正在加载作业数据...</div>
+        <div class="full-width-msg loading"><i class="fas fa-spinner fa-pulse"></i> 正在加载作业数据...</div>
     </div>
-    <footer>📌 数据来源于 Gitee 仓库中的 homework.json 文件 | 自动刷新 | 支持暗色跟随系统 | 下方工具可快速生成作业JSON</footer>
+    
+    <footer>📌 数据来源于 Gitee 仓库中的 homework.json 文件 | 自动刷新 | 支持暗色跟随系统 | 使用上方工具可快速生成作业JSON</footer>
 </div>
 
 <div id="copyToast" class="copy-toast">✅ 已复制到剪贴板</div>
 
 <script>
-    // ---------- 原有看板核心逻辑 (保持不变) ----------
+    // ---------- 看板核心逻辑 ----------
     const DATA_URL = 'https://gitee.com/pepsi-666/xiao-jie/raw/master/homework.json';
-    const FALLBACK_DATA = [
-        { "subject": "Linux", "status": "未完成", "homeworkName": "4.10习题", "platform": "雨课堂", "startDate": "3.30", "endDate": "4.18" },
-        { "subject": "编译原理", "status": "未完成", "homeworkName": "作业5-正规式与有限自动机理论", "platform": "学习通", "startDate": "3.30", "endDate": "4.3" },
-        { "subject": "嵌入式系统", "status": "未完成", "homeworkName": "控制海龟移动", "platform": "学习通", "startDate": "3.13", "endDate": "暂定" }
-    ];
 
     let currentHomeworkList = [];
     let currentFilter = 'all';
 
     const container = document.getElementById('homeworkContainer');
+    const warningContainer = document.getElementById('warningContainer');
     const totalSpan = document.getElementById('totalCount');
     const pendingSpan = document.getElementById('pendingCount');
     const completedSpan = document.getElementById('completedCount');
@@ -484,7 +618,10 @@
 
     function renderHomeworks() {
         if (!currentHomeworkList.length) {
-            container.innerHTML = `<div class="error-message"><i class="fas fa-database"></i> 暂无作业数据，请点击同步或检查网络</div>`;
+            container.innerHTML = `<div class="full-width-msg error-message">
+                <i class="fas fa-folder-open" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                暂无作业数据，请检查数据源或点击同步
+            </div>`;
             updateStats([]);
             return;
         }
@@ -494,7 +631,10 @@
         }
         updateStats(currentHomeworkList);
         if (filteredList.length === 0) {
-            container.innerHTML = `<div class="error-message"><i class="fas fa-filter"></i> 没有找到“${currentFilter}”状态的作业～</div>`;
+            container.innerHTML = `<div class="full-width-msg error-message" style="background: transparent; color: #64748b; border: 2px dashed #cbd5e1;">
+                <i class="fas fa-filter" style="font-size: 2rem;"></i>
+                没有找到符合“${currentFilter}”状态的作业～
+            </div>`;
             return;
         }
         const cardsHtml = filteredList.map(hw => {
@@ -530,7 +670,8 @@
     }
 
     async function fetchHomeworkData() {
-        container.innerHTML = `<div class="loading"><i class="fas fa-spinner fa-pulse"></i> 正在从 Gitee 拉取最新数据...</div>`;
+        container.innerHTML = `<div class="full-width-msg loading"><i class="fas fa-spinner fa-pulse" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i> 正在从 Gitee 拉取最新数据...</div>`;
+        warningContainer.innerHTML = ''; // 清除警告
         try {
             const response = await fetch(DATA_URL, { cache: 'no-store', headers: { 'Accept': 'application/json' } });
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -545,7 +686,7 @@
                 throw new Error('数据不是有效的作业数组');
             }
         } catch (err) {
-            console.warn('远程拉取失败，尝试缓存或后备数据', err);
+            console.warn('远程拉取失败，尝试使用缓存', err);
             const cached = localStorage.getItem('cachedHomework');
             if (cached) {
                 try {
@@ -553,18 +694,23 @@
                     if (Array.isArray(parsed) && parsed.length) {
                         currentHomeworkList = parsed;
                         renderHomeworks();
-                        container.innerHTML = container.innerHTML + `<div style="margin-top:0.5rem; font-size:0.75rem; text-align:center;">⚠️ 使用本地缓存数据，最新内容未同步</div>`;
+                        warningContainer.innerHTML = `<div class="warning-message"><i class="fas fa-exclamation-triangle"></i> 网络异常，当前显示的是本地缓存数据。</div>`;
                         return;
                     }
                 } catch(e) {}
             }
-            currentHomeworkList = FALLBACK_DATA;
-            renderHomeworks();
-            container.innerHTML = container.innerHTML + `<div style="margin-top:1rem; padding:0.6rem; background:#fff2e0; border-radius:1rem; text-align:center;"><i class="fas fa-exclamation-triangle"></i> 无法连接远程数据源，当前显示内置示例。请确保 homework.json 已上传至仓库根目录且可公开访问。</div>`;
+            // 彻底去除假数据回退，直接抛出明显的错误信息
+            currentHomeworkList = [];
+            updateStats([]);
+            container.innerHTML = `<div class="full-width-msg error-message">
+                <i class="fas fa-wifi" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                无法连接远程数据源且无本地缓存数据。请检查网络或 Gitee 仓库配置。
+            </div>`;
         }
     }
 
     async function forceRefresh() { await fetchHomeworkData(); }
+    
     function bindFilters() {
         const btns = document.querySelectorAll('.filter-btn');
         btns.forEach(btn => {
@@ -589,20 +735,18 @@
         });
     }
 
-    // ---------- 新增：作业文本解析 & 转换器模块 ----------
-    let latestGeneratedJson = null;  // 存储最新生成的JSON字符串
+    // ---------- 作业文本解析 & 转换器模块 ----------
+    let latestGeneratedJson = null;
 
-    // 核心解析函数: 将文本转为作业对象
     function parseHomeworkFromText(text) {
         const lines = text.split(/\r?\n/);
         let subject = '';
-        let status = '未完成';       // 默认未完成
+        let status = '未完成';
         let homeworkName = '';
         let platform = '';
         let startDate = '';
         let endDate = '';
 
-        // 辅助提取键值对
         function extractValue(line, keyword) {
             const regex = new RegExp(`${keyword}[：:]\\s*(.+)`);
             const match = line.match(regex);
@@ -613,47 +757,40 @@
             let line = lines[i].trim();
             if (line === '') continue;
 
-            // 1. 提取科目: 第一行非空且不包含常见字段特征 且 不包含 '/' 且 不含冒号(可能为普通科目)
             if (!subject && !line.includes('作业：') && !line.includes('平台：') && !line.includes('开始日期：') && !line.includes('结束日期：') && !line.includes('状态：') && !line.includes('#')) {
                 subject = line;
                 continue;
             }
 
-            // 2. 状态提取: 优先从 "状态：" 获取
             const statusVal = extractValue(line, '状态');
             if (statusVal && (statusVal === '未完成' || statusVal === '已完成')) {
                 status = statusVal;
                 continue;
             }
-            // 特殊格式: #作业/作业详情/未完成  或任意包含/未完成/已完成的行
+            
             if (line.includes('#') && (line.includes('未完成') || line.includes('已完成'))) {
                 if (line.includes('未完成')) status = '未完成';
                 if (line.includes('已完成')) status = '已完成';
                 continue;
             }
-            // 通用匹配关键词 未完成/已完成 (但避免误判)
+            
             if ((line.includes('未完成') || line.includes('已完成')) && !line.includes('作业：') && !line.includes('平台：')) {
                 if (line.includes('未完成')) status = '未完成';
                 if (line.includes('已完成')) status = '已完成';
                 continue;
             }
 
-            // 3. 作业名称
             let hw = extractValue(line, '作业');
             if (hw) { homeworkName = hw; continue; }
 
-            // 4. 平台
             let plat = extractValue(line, '平台');
             if (plat) { platform = plat; continue; }
 
-            // 5. 开始日期
             let sDate = extractValue(line, '开始日期');
             if (sDate) { startDate = sDate; continue; }
-            // 兼容"开始时间"
             let sDate2 = extractValue(line, '开始时间');
             if (sDate2) { startDate = sDate2; continue; }
 
-            // 6. 结束日期
             let eDate = extractValue(line, '结束日期');
             if (eDate) { endDate = eDate; continue; }
             let eDate2 = extractValue(line, '截止日期');
@@ -662,7 +799,6 @@
             if (eDate3) { endDate = eDate3; continue; }
         }
 
-        // 后处理: 如果科目未提取到，尝试从第一行再次捞取(或者某些情况第二行)
         if (!subject && lines.length > 0) {
             for (let line of lines) {
                 let tl = line.trim();
@@ -672,7 +808,7 @@
                 }
             }
         }
-        // 确保必要字段完整性
+        
         if (!subject) throw new Error('❌ 未能识别科目，请确保第一行为科目名称（如：嵌入式系统）');
         if (!homeworkName) throw new Error('❌ 未找到作业名称，请使用“作业：xxx”格式');
         if (!platform) platform = '未指定平台';
@@ -689,15 +825,15 @@
         };
     }
 
-    // 显示toast提示
     function showToast(message, isError = false) {
         const toast = document.getElementById('copyToast');
         if (!toast) return;
         toast.textContent = isError ? `⚠️ ${message}` : `✅ ${message}`;
         toast.style.background = isError ? '#b91c1c' : '#1e293b';
-        toast.style.opacity = '1';
+        toast.classList.add('show');
+        
         setTimeout(() => {
-            toast.style.opacity = '0';
+            toast.classList.remove('show');
             setTimeout(() => {
                 toast.textContent = '✅ 已复制到剪贴板';
                 toast.style.background = '#1e293b';
@@ -705,25 +841,26 @@
         }, 2000);
     }
 
-    // 刷新JSON预览区域
     function updateJsonPreview(obj) {
         const previewEl = document.getElementById('jsonPreview');
         if (!previewEl) return;
         if (obj && typeof obj === 'object') {
             latestGeneratedJson = JSON.stringify(obj, null, 2);
             previewEl.textContent = latestGeneratedJson;
+            previewEl.style.color = document.body.classList.contains('dark') ? '#a7f3d0' : '#059669';
         } else {
             latestGeneratedJson = null;
             previewEl.textContent = '⚠️ 解析失败，请检查输入格式';
+            previewEl.style.color = '#ef4444';
         }
     }
 
-    // 转换主逻辑
     function handleConvert() {
         const textarea = document.getElementById('inputHomeworkText');
         const rawText = textarea.value;
         if (!rawText.trim()) {
-            document.getElementById('jsonPreview').textContent = '⛔ 请输入作业文本内容';
+            document.getElementById('jsonPreview').textContent = '⛔ 请输入作业文本内容后再点击转换';
+            document.getElementById('jsonPreview').style.color = '#ef4444';
             showToast('请输入内容', true);
             return;
         }
@@ -734,42 +871,33 @@
         } catch (err) {
             console.error(err);
             document.getElementById('jsonPreview').textContent = `❌ 解析错误: ${err.message}`;
+            document.getElementById('jsonPreview').style.color = '#ef4444';
             latestGeneratedJson = null;
             showToast(err.message, true);
         }
     }
 
-    // 复制JSON
     function handleCopyJson() {
         if (!latestGeneratedJson) {
-            showToast('没有可复制的JSON，请先点击「转换为JSON」', true);
+            showToast('没有可复制的JSON，请先输入并转换', true);
             return;
         }
         navigator.clipboard.writeText(latestGeneratedJson).then(() => {
-            showToast('JSON已复制到剪贴板');
+            showToast('JSON 已成功复制到剪贴板');
         }).catch(() => {
-            showToast('复制失败，请手动复制', true);
+            showToast('复制失败，请手动选择复制', true);
         });
     }
 
-    // 填充示例文本 (与需求示例一致)
     function fillExample() {
-        const exampleText = `嵌入式系统
-#作业/作业详情/未完成
-作业：控制海龟移动
-平台：学习通
-开始日期：3.13
-结束日期：暂定`;
+        const exampleText = `嵌入式系统\n#作业/作业详情/未完成\n作业：控制海龟移动\n平台：学习通\n开始日期：3.13\n结束日期：暂定`;
         const textarea = document.getElementById('inputHomeworkText');
         if (textarea) {
             textarea.value = exampleText;
-            showToast('已填充示例，点击转换即可');
-            // 可选自动转换
-            handleConvert();
+            showToast('已填入示例格式，请点击转换');
         }
     }
 
-    // 绑定转换器UI事件
     function initConverter() {
         const convertBtn = document.getElementById('convertBtn');
         const copyBtn = document.getElementById('copyJsonBtn');
@@ -777,30 +905,13 @@
         if (convertBtn) convertBtn.addEventListener('click', handleConvert);
         if (copyBtn) copyBtn.addEventListener('click', handleCopyJson);
         if (exampleBtn) exampleBtn.addEventListener('click', fillExample);
-        // 预置默认示例展示（可选，让用户更直观）
-        const defaultExample = `嵌入式系统
-#作业/作业详情/未完成
-作业：控制海龟移动
-平台：学习通
-开始日期：3.13
-结束日期：暂定`;
-        const textarea = document.getElementById('inputHomeworkText');
-        if (textarea && !textarea.value.trim()) {
-            textarea.value = defaultExample;
-        }
-        // 初次自动转换演示，但为了不干扰手动，仅当textarea有内容且预览区默认文案时转换一次?
-        if (textarea && textarea.value.trim() && document.getElementById('jsonPreview').innerText.includes('等待转换')) {
-            handleConvert();
-        }
     }
 
-    // 初始化看板原有功能
     async function init() {
         detectDarkMode();
         bindFilters();
-        refreshBtn.addEventListener('click', forceRefresh);
+        if (refreshBtn) refreshBtn.addEventListener('click', forceRefresh);
         await fetchHomeworkData();
-        // 初始化转换器模块 (确保DOM元素已存在)
         initConverter();
     }
 
