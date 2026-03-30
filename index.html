@@ -531,7 +531,7 @@
 <div class="container">
     <div class="header">
         <h1><i class="fas fa-tasks"></i> 作业看板 · 动态同步</h1>
-        <p>数据源来自 Gitee 仓库 | 实时渲染 | 支持筛选与状态追踪</p>
+        <p>数据源来自 GitHub 仓库 | 实时渲染 | 支持筛选与状态追踪</p>
     </div>
 
     <div class="controls">
@@ -572,17 +572,15 @@
         <div class="full-width-msg loading"><i class="fas fa-spinner fa-pulse"></i> 正在加载作业数据...</div>
     </div>
     
-    <footer>📌 数据来源于 Gitee 仓库中的 homework.json 文件 | 自动刷新 | 支持暗色跟随系统 | 使用上方工具可快速生成作业JSON</footer>
+    <footer>📌 数据来源于 GitHub 仓库中的 homework.json 文件 | 自动刷新 | 支持暗色跟随系统 | 使用上方工具可快速生成作业JSON</footer>
 </div>
 
 <div id="copyToast" class="copy-toast">✅ 已复制到剪贴板</div>
 
 <script>
     // ---------- 看板核心逻辑 ----------
-    // 使用 CORS 代理解决 Gitee raw 的跨域重定向问题
-	// 使用 allorigins 代理，它通常不会限制非 localhost 环境
-	const ISSUE_NUMBER = 1;   // 改成你的 Issue 编号
-	const DATA_URL = `https://gitee.com/api/v5/repos/pepsi-666/xiao-jie/issues/${ISSUE_NUMBER}`;
+    // GitHub 原始数据访问地址 (请确保分支名为 main，且文件名为 homework.json)
+    const DATA_URL = `https://raw.githubusercontent.com/xiaojie256/netlify-deploy/main/homework.json`;
 
     let currentHomeworkList = [];
     let currentFilter = 'all';
@@ -673,32 +671,23 @@
     }
 
     async function fetchHomeworkData() {
-        container.innerHTML = `<div class="full-width-msg loading"><i class="fas fa-spinner fa-pulse" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i> 正在从 Gitee 拉取最新数据...</div>`;
-        warningContainer.innerHTML = ''; // 清除警告
+        container.innerHTML = `<div class="full-width-msg loading"><i class="fas fa-spinner fa-pulse" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i> 正在从 GitHub 拉取最新数据...</div>`;
+        warningContainer.innerHTML = ''; 
         try {
-			const response = await fetch(DATA_URL, { cache: 'no-store', headers: { 'Accept': 'application/json' } });
-			if (!response.ok) throw new Error(`HTTP ${response.status}`);
-			const issueData = await response.json();      // Issue API 返回的对象
-			let bodyText = issueData.body || '';          // Issue 正文内容
+            const response = await fetch(DATA_URL, { cache: 'no-store' });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            
+            const data = await response.json();
 
-			// 如果正文包含 Markdown 代码块（```json ... ```），则提取其中的 JSON
-			const codeBlockMatch = bodyText.match(/```(?:json)?\s*([\s\S]*?)```/);
-			if (codeBlockMatch) {
-				bodyText = codeBlockMatch[1];
-			}
-
-			// 解析 JSON 数组
-			const data = JSON.parse(bodyText.trim());
-
-			if (Array.isArray(data) && data.length > 0) {
-				const validated = data.filter(item => item.subject && item.status && item.homeworkName);
-				if (validated.length === 0) throw new Error('数据格式无效');
-				currentHomeworkList = validated;
-				renderHomeworks();
-				localStorage.setItem('cachedHomework', JSON.stringify(validated));
-			} else {
-				throw new Error('数据不是有效的作业数组');
-			}
+            if (Array.isArray(data) && data.length > 0) {
+                const validated = data.filter(item => item.subject && item.status && item.homeworkName);
+                if (validated.length === 0) throw new Error('数据格式无效');
+                currentHomeworkList = validated;
+                renderHomeworks();
+                localStorage.setItem('cachedHomework', JSON.stringify(validated));
+            } else {
+                throw new Error('数据不是有效的作业数组');
+            }
         } catch (err) {
             console.warn('远程拉取失败，尝试使用缓存', err);
             const cached = localStorage.getItem('cachedHomework');
@@ -713,12 +702,11 @@
                     }
                 } catch(e) {}
             }
-            // 彻底去除假数据回退，直接抛出明显的错误信息
             currentHomeworkList = [];
             updateStats([]);
             container.innerHTML = `<div class="full-width-msg error-message">
                 <i class="fas fa-wifi" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
-                无法连接远程数据源且无本地缓存数据。请检查网络或 Gitee 仓库配置。
+                无法连接远程数据源且无本地缓存数据。请检查 GitHub 仓库配置。
             </div>`;
         }
     }
