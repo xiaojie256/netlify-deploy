@@ -580,9 +580,9 @@
 <script>
     // ---------- 看板核心逻辑 ----------
     // 使用 CORS 代理解决 Gitee raw 的跨域重定向问题
-    const PROXY_URL = 'https://api.allorigins.win/raw?url=';
     const TARGET_URL = 'https://gitee.com/pepsi-666/xiao-jie/raw/master/homework.json';
-    const DATA_URL = PROXY_URL + encodeURIComponent(TARGET_URL);
+	const PROXY_URL = 'https://corsproxy.io/?';
+	const DATA_URL = PROXY_URL + encodeURIComponent(TARGET_URL);
 
     let currentHomeworkList = [];
     let currentFilter = 'all';
