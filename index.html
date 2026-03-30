@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>作业看板 · 动态数据同步</title>
+    <title>作业看板 · 动态同步 + 智能转换器</title>
     <!-- Google Font & Font Awesome -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -22,7 +22,7 @@
             min-height: 100vh;
         }
 
-        /* 暗色模式支持 (可选，根据系统或按钮) */
+        /* 暗色模式支持 */
         body.dark {
             background: linear-gradient(145deg, #0f172a 0%, #111827 100%);
             color: #e2e8f0;
@@ -152,6 +152,125 @@
             line-height: 1;
         }
 
+        /* 转换器卡片 (新增样式) */
+        .converter-card {
+            background: rgba(255,255,255,0.75);
+            backdrop-filter: blur(8px);
+            border-radius: 1.8rem;
+            padding: 1.5rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid rgba(255,255,255,0.6);
+            box-shadow: 0 12px 24px -12px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        }
+        body.dark .converter-card {
+            background: rgba(30,41,59,0.8);
+            border-color: #334155;
+        }
+        .converter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        .converter-header h3 {
+            font-weight: 700;
+            font-size: 1.4rem;
+            background: linear-gradient(135deg, #3b82f6, #a855f7);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .converter-textarea {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 1.2rem;
+            border: 1px solid #cbd5e1;
+            background: rgba(255,255,255,0.9);
+            font-family: 'Inter', monospace;
+            font-size: 0.9rem;
+            resize: vertical;
+            outline: none;
+            transition: 0.2s;
+        }
+        body.dark .converter-textarea {
+            background: #0f172a;
+            border-color: #475569;
+            color: #e2e8f0;
+        }
+        .converter-textarea:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
+        }
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin: 1rem 0;
+        }
+        .btn-convert {
+            background: #6366f1;
+        }
+        .btn-convert:hover {
+            background: #4f46e5;
+        }
+        .btn-copy {
+            background: #10b981;
+        }
+        .btn-copy:hover {
+            background: #059669;
+        }
+        .btn-example {
+            background: transparent;
+            border: 1px solid #94a3b8;
+            color: #334155;
+        }
+        body.dark .btn-example {
+            color: #cbd5e1;
+            border-color: #64748b;
+        }
+        .btn-example:hover {
+            background: rgba(59,130,246,0.2);
+            border-color: #3b82f6;
+        }
+        .json-result {
+            background: rgba(0,0,0,0.05);
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-top: 0.5rem;
+        }
+        body.dark .json-result {
+            background: #0f172a;
+        }
+        #jsonPreview {
+            margin: 0;
+            font-family: 'Monaco', 'Menlo', 'Cascadia Code', monospace;
+            font-size: 0.8rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+            color: #0f172a;
+        }
+        body.dark #jsonPreview {
+            color: #cbd5e6;
+        }
+        .copy-toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+            backdrop-filter: blur(8px);
+            font-weight: 500;
+        }
         /* 作业网格 */
         .homework-grid {
             display: grid;
@@ -267,6 +386,8 @@
         @media (max-width: 680px) {
             body { padding: 1rem; }
             .controls { flex-direction: column; align-items: stretch; }
+            .btn-group { justify-content: stretch; }
+            .btn-group button { flex: 1; justify-content: center; }
         }
     </style>
 </head>
@@ -292,36 +413,50 @@
         <div class="stat-card"><i class="fas fa-check-circle stat-icon"></i><div class="stat-info"><h3>已完成</h3><span class="stat-number" id="completedCount">0</span></div></div>
     </div>
 
+    <!-- ========= 新增：作业文本转换助手 ========= -->
+    <div class="converter-card">
+        <div class="converter-header">
+            <h3><i class="fas fa-exchange-alt"></i> 作业文本转换助手</h3>
+            <span style="font-size: 0.75rem; background: #eef2ff; padding: 0.2rem 0.8rem; border-radius: 2rem;"><i class="fas fa-magic"></i> 智能解析 → JSON</span>
+        </div>
+        <textarea id="inputHomeworkText" class="converter-textarea" rows="6" placeholder="粘贴以下格式的作业信息：&#10;&#10;嵌入式系统&#10;#作业/作业详情/未完成&#10;作业：控制海龟移动&#10;平台：学习通&#10;开始日期：3.13&#10;结束日期：暂定"></textarea>
+        <div class="btn-group">
+            <button id="convertBtn" class="refresh-btn btn-convert"><i class="fas fa-code"></i> 转换为JSON</button>
+            <button id="copyJsonBtn" class="refresh-btn btn-copy"><i class="fas fa-copy"></i> 复制JSON</button>
+            <button id="exampleBtn" class="filter-btn btn-example"><i class="fas fa-arrow-down"></i> 填充示例</button>
+        </div>
+        <div class="json-result">
+            <pre id="jsonPreview" style="margin:0; font-family: monospace; font-size:0.85rem; white-space: pre-wrap; word-break:break-all;">⚡ 点击「转换为JSON」生成结构化数据</pre>
+        </div>
+        <div style="font-size:0.7rem; margin-top:0.5rem; opacity:0.7;"><i class="fas fa-info-circle"></i> 支持格式：科目/状态行(#作业/作业详情/未完成 或 状态：未完成) + 作业/平台/起止日期</div>
+    </div>
+
     <div id="homeworkContainer" class="homework-grid">
         <div class="loading"><i class="fas fa-spinner fa-pulse"></i> 正在加载作业数据...</div>
     </div>
-    <footer>📌 数据来源于 Gitee 仓库中的 homework.json 文件 | 自动刷新 | 支持暗色跟随系统</footer>
+    <footer>📌 数据来源于 Gitee 仓库中的 homework.json 文件 | 自动刷新 | 支持暗色跟随系统 | 下方工具可快速生成作业JSON</footer>
 </div>
 
+<div id="copyToast" class="copy-toast">✅ 已复制到剪贴板</div>
+
 <script>
-    // ---------- 配置区域 ----------
-    // 请将您的 homework.json 文件放在 Gitee 仓库的根目录，并确保仓库公开（或至少文件可公开访问）
-    // 原始 raw 地址格式：https://gitee.com/pepsi-666/xiao-jie/raw/master/homework.json
+    // ---------- 原有看板核心逻辑 (保持不变) ----------
     const DATA_URL = 'https://gitee.com/pepsi-666/xiao-jie/raw/master/homework.json';
-    
-    // 备用本地示例数据（当网络请求失败时使用，也作为初始化演示）
     const FALLBACK_DATA = [
         { "subject": "Linux", "status": "未完成", "homeworkName": "4.10习题", "platform": "雨课堂", "startDate": "3.30", "endDate": "4.18" },
         { "subject": "编译原理", "status": "未完成", "homeworkName": "作业5-正规式与有限自动机理论", "platform": "学习通", "startDate": "3.30", "endDate": "4.3" },
         { "subject": "嵌入式系统", "status": "未完成", "homeworkName": "控制海龟移动", "platform": "学习通", "startDate": "3.13", "endDate": "暂定" }
     ];
 
-    let currentHomeworkList = [];      // 存储原始数据
-    let currentFilter = 'all';         // all, 未完成, 已完成
+    let currentHomeworkList = [];
+    let currentFilter = 'all';
 
-    // DOM 元素
     const container = document.getElementById('homeworkContainer');
     const totalSpan = document.getElementById('totalCount');
     const pendingSpan = document.getElementById('pendingCount');
     const completedSpan = document.getElementById('completedCount');
     const refreshBtn = document.getElementById('refreshBtn');
 
-    // 辅助函数：渲染统计数字
     function updateStats(list) {
         const total = list.length;
         const pending = list.filter(item => item.status === '未完成').length;
@@ -331,16 +466,14 @@
         completedSpan.innerText = completed;
     }
 
-    // 辅助：计算剩余天数或提示
     function getDeadlineMessage(endDate) {
         if (!endDate || endDate === '暂定') return '⏳ 截止日期暂定';
-        // 尝试解析月.日 例如 "4.18" -> 2026年4月18日 (年份按当前年处理)
         const parts = endDate.split('.');
         if (parts.length === 2) {
             const now = new Date();
             const year = now.getFullYear();
             let targetDate = new Date(year, parseInt(parts[0])-1, parseInt(parts[1]));
-            if (targetDate < now) targetDate = new Date(year+1, parseInt(parts[0])-1, parseInt(parts[1])); // 跨年补偿
+            if (targetDate < now) targetDate = new Date(year+1, parseInt(parts[0])-1, parseInt(parts[1]));
             const diffDays = Math.ceil((targetDate - now) / (1000 * 60 * 60 * 24));
             if (diffDays < 0) return `⚠️ 已过期 ${Math.abs(diffDays)} 天`;
             if (diffDays === 0) return '🔥 今天截止';
@@ -349,7 +482,6 @@
         return `📅 截止 ${endDate}`;
     }
 
-    // 渲染作业卡片 (根据 currentFilter 筛选)
     function renderHomeworks() {
         if (!currentHomeworkList.length) {
             container.innerHTML = `<div class="error-message"><i class="fas fa-database"></i> 暂无作业数据，请点击同步或检查网络</div>`;
@@ -360,13 +492,11 @@
         if (currentFilter !== 'all') {
             filteredList = currentHomeworkList.filter(item => item.status === currentFilter);
         }
-        updateStats(currentHomeworkList);  // 统计基于全量数据，但展示基于筛选
-
+        updateStats(currentHomeworkList);
         if (filteredList.length === 0) {
             container.innerHTML = `<div class="error-message"><i class="fas fa-filter"></i> 没有找到“${currentFilter}”状态的作业～</div>`;
             return;
         }
-
         const cardsHtml = filteredList.map(hw => {
             const statusClass = hw.status === '已完成' ? 'completed' : '';
             const deadlineMsg = getDeadlineMessage(hw.endDate);
@@ -389,7 +519,6 @@
         container.innerHTML = cardsHtml;
     }
 
-    // 简单的防XSS
     function escapeHtml(str) {
         if (!str) return '';
         return str.replace(/[&<>]/g, function(m) {
@@ -397,36 +526,26 @@
             if (m === '<') return '&lt;';
             if (m === '>') return '&gt;';
             return m;
-        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
-            return c;
         });
     }
 
-    // 从远程加载数据
     async function fetchHomeworkData() {
         container.innerHTML = `<div class="loading"><i class="fas fa-spinner fa-pulse"></i> 正在从 Gitee 拉取最新数据...</div>`;
         try {
-            const response = await fetch(DATA_URL, {
-                cache: 'no-store',
-                headers: { 'Accept': 'application/json' }
-            });
+            const response = await fetch(DATA_URL, { cache: 'no-store', headers: { 'Accept': 'application/json' } });
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const data = await response.json();
-            // 期望数据格式为数组，每个对象包含 subject, status, homeworkName, platform, startDate, endDate
             if (Array.isArray(data) && data.length > 0) {
-                // 数据校验：确保每条记录都有必要字段
                 const validated = data.filter(item => item.subject && item.status && item.homeworkName);
-                if (validated.length === 0) throw new Error('数据格式无效，缺少必要字段');
+                if (validated.length === 0) throw new Error('数据格式无效');
                 currentHomeworkList = validated;
                 renderHomeworks();
-                // 存储到 localStorage 作为缓存
                 localStorage.setItem('cachedHomework', JSON.stringify(validated));
             } else {
                 throw new Error('数据不是有效的作业数组');
             }
         } catch (err) {
-            console.warn('远程拉取失败，尝试使用缓存或后备数据', err);
-            // 尝试从 localStorage 读取缓存
+            console.warn('远程拉取失败，尝试缓存或后备数据', err);
             const cached = localStorage.getItem('cachedHomework');
             if (cached) {
                 try {
@@ -439,53 +558,250 @@
                     }
                 } catch(e) {}
             }
-            // 最终降级使用示例数据
             currentHomeworkList = FALLBACK_DATA;
             renderHomeworks();
             container.innerHTML = container.innerHTML + `<div style="margin-top:1rem; padding:0.6rem; background:#fff2e0; border-radius:1rem; text-align:center;"><i class="fas fa-exclamation-triangle"></i> 无法连接远程数据源，当前显示内置示例。请确保 homework.json 已上传至仓库根目录且可公开访问。</div>`;
         }
     }
 
-    // 主动刷新（强制拉取，忽略缓存展示）
-    async function forceRefresh() {
-        await fetchHomeworkData();
-    }
-
-    // 切换筛选事件
+    async function forceRefresh() { await fetchHomeworkData(); }
     function bindFilters() {
         const btns = document.querySelectorAll('.filter-btn');
         btns.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const filterValue = btn.getAttribute('data-filter');
                 if (!filterValue) return;
-                // 更新激活样式
                 btns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 currentFilter = filterValue;
-                renderHomeworks();  // 重新渲染当前数据（不重新拉取）
+                renderHomeworks();
             });
         });
     }
 
-    // 检测系统暗色模式并应用（可选小细节）
     function detectDarkMode() {
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
             document.body.classList.add('dark');
         }
-        // 可添加手动切换，本示例仅跟随系统（增强美观）
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
             if (e.matches) document.body.classList.add('dark');
             else document.body.classList.remove('dark');
         });
     }
 
-    // 初始化
+    // ---------- 新增：作业文本解析 & 转换器模块 ----------
+    let latestGeneratedJson = null;  // 存储最新生成的JSON字符串
+
+    // 核心解析函数: 将文本转为作业对象
+    function parseHomeworkFromText(text) {
+        const lines = text.split(/\r?\n/);
+        let subject = '';
+        let status = '未完成';       // 默认未完成
+        let homeworkName = '';
+        let platform = '';
+        let startDate = '';
+        let endDate = '';
+
+        // 辅助提取键值对
+        function extractValue(line, keyword) {
+            const regex = new RegExp(`${keyword}[：:]\\s*(.+)`);
+            const match = line.match(regex);
+            return match ? match[1].trim() : null;
+        }
+
+        for (let i = 0; i < lines.length; i++) {
+            let line = lines[i].trim();
+            if (line === '') continue;
+
+            // 1. 提取科目: 第一行非空且不包含常见字段特征 且 不包含 '/' 且 不含冒号(可能为普通科目)
+            if (!subject && !line.includes('作业：') && !line.includes('平台：') && !line.includes('开始日期：') && !line.includes('结束日期：') && !line.includes('状态：') && !line.includes('#')) {
+                subject = line;
+                continue;
+            }
+
+            // 2. 状态提取: 优先从 "状态：" 获取
+            const statusVal = extractValue(line, '状态');
+            if (statusVal && (statusVal === '未完成' || statusVal === '已完成')) {
+                status = statusVal;
+                continue;
+            }
+            // 特殊格式: #作业/作业详情/未完成  或任意包含/未完成/已完成的行
+            if (line.includes('#') && (line.includes('未完成') || line.includes('已完成'))) {
+                if (line.includes('未完成')) status = '未完成';
+                if (line.includes('已完成')) status = '已完成';
+                continue;
+            }
+            // 通用匹配关键词 未完成/已完成 (但避免误判)
+            if ((line.includes('未完成') || line.includes('已完成')) && !line.includes('作业：') && !line.includes('平台：')) {
+                if (line.includes('未完成')) status = '未完成';
+                if (line.includes('已完成')) status = '已完成';
+                continue;
+            }
+
+            // 3. 作业名称
+            let hw = extractValue(line, '作业');
+            if (hw) { homeworkName = hw; continue; }
+
+            // 4. 平台
+            let plat = extractValue(line, '平台');
+            if (plat) { platform = plat; continue; }
+
+            // 5. 开始日期
+            let sDate = extractValue(line, '开始日期');
+            if (sDate) { startDate = sDate; continue; }
+            // 兼容"开始时间"
+            let sDate2 = extractValue(line, '开始时间');
+            if (sDate2) { startDate = sDate2; continue; }
+
+            // 6. 结束日期
+            let eDate = extractValue(line, '结束日期');
+            if (eDate) { endDate = eDate; continue; }
+            let eDate2 = extractValue(line, '截止日期');
+            if (eDate2) { endDate = eDate2; continue; }
+            let eDate3 = extractValue(line, '结束时间');
+            if (eDate3) { endDate = eDate3; continue; }
+        }
+
+        // 后处理: 如果科目未提取到，尝试从第一行再次捞取(或者某些情况第二行)
+        if (!subject && lines.length > 0) {
+            for (let line of lines) {
+                let tl = line.trim();
+                if (tl && !tl.includes('作业：') && !tl.includes('平台：') && !tl.includes('开始日期：') && !tl.includes('结束日期：') && !tl.includes('状态：') && !tl.includes('#')) {
+                    subject = tl;
+                    break;
+                }
+            }
+        }
+        // 确保必要字段完整性
+        if (!subject) throw new Error('❌ 未能识别科目，请确保第一行为科目名称（如：嵌入式系统）');
+        if (!homeworkName) throw new Error('❌ 未找到作业名称，请使用“作业：xxx”格式');
+        if (!platform) platform = '未指定平台';
+        if (!startDate) startDate = '未填写';
+        if (!endDate) endDate = '暂定';
+
+        return {
+            subject: subject,
+            status: status,
+            homeworkName: homeworkName,
+            platform: platform,
+            startDate: startDate,
+            endDate: endDate
+        };
+    }
+
+    // 显示toast提示
+    function showToast(message, isError = false) {
+        const toast = document.getElementById('copyToast');
+        if (!toast) return;
+        toast.textContent = isError ? `⚠️ ${message}` : `✅ ${message}`;
+        toast.style.background = isError ? '#b91c1c' : '#1e293b';
+        toast.style.opacity = '1';
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => {
+                toast.textContent = '✅ 已复制到剪贴板';
+                toast.style.background = '#1e293b';
+            }, 300);
+        }, 2000);
+    }
+
+    // 刷新JSON预览区域
+    function updateJsonPreview(obj) {
+        const previewEl = document.getElementById('jsonPreview');
+        if (!previewEl) return;
+        if (obj && typeof obj === 'object') {
+            latestGeneratedJson = JSON.stringify(obj, null, 2);
+            previewEl.textContent = latestGeneratedJson;
+        } else {
+            latestGeneratedJson = null;
+            previewEl.textContent = '⚠️ 解析失败，请检查输入格式';
+        }
+    }
+
+    // 转换主逻辑
+    function handleConvert() {
+        const textarea = document.getElementById('inputHomeworkText');
+        const rawText = textarea.value;
+        if (!rawText.trim()) {
+            document.getElementById('jsonPreview').textContent = '⛔ 请输入作业文本内容';
+            showToast('请输入内容', true);
+            return;
+        }
+        try {
+            const parsed = parseHomeworkFromText(rawText);
+            updateJsonPreview(parsed);
+            showToast('转换成功');
+        } catch (err) {
+            console.error(err);
+            document.getElementById('jsonPreview').textContent = `❌ 解析错误: ${err.message}`;
+            latestGeneratedJson = null;
+            showToast(err.message, true);
+        }
+    }
+
+    // 复制JSON
+    function handleCopyJson() {
+        if (!latestGeneratedJson) {
+            showToast('没有可复制的JSON，请先点击「转换为JSON」', true);
+            return;
+        }
+        navigator.clipboard.writeText(latestGeneratedJson).then(() => {
+            showToast('JSON已复制到剪贴板');
+        }).catch(() => {
+            showToast('复制失败，请手动复制', true);
+        });
+    }
+
+    // 填充示例文本 (与需求示例一致)
+    function fillExample() {
+        const exampleText = `嵌入式系统
+#作业/作业详情/未完成
+作业：控制海龟移动
+平台：学习通
+开始日期：3.13
+结束日期：暂定`;
+        const textarea = document.getElementById('inputHomeworkText');
+        if (textarea) {
+            textarea.value = exampleText;
+            showToast('已填充示例，点击转换即可');
+            // 可选自动转换
+            handleConvert();
+        }
+    }
+
+    // 绑定转换器UI事件
+    function initConverter() {
+        const convertBtn = document.getElementById('convertBtn');
+        const copyBtn = document.getElementById('copyJsonBtn');
+        const exampleBtn = document.getElementById('exampleBtn');
+        if (convertBtn) convertBtn.addEventListener('click', handleConvert);
+        if (copyBtn) copyBtn.addEventListener('click', handleCopyJson);
+        if (exampleBtn) exampleBtn.addEventListener('click', fillExample);
+        // 预置默认示例展示（可选，让用户更直观）
+        const defaultExample = `嵌入式系统
+#作业/作业详情/未完成
+作业：控制海龟移动
+平台：学习通
+开始日期：3.13
+结束日期：暂定`;
+        const textarea = document.getElementById('inputHomeworkText');
+        if (textarea && !textarea.value.trim()) {
+            textarea.value = defaultExample;
+        }
+        // 初次自动转换演示，但为了不干扰手动，仅当textarea有内容且预览区默认文案时转换一次?
+        if (textarea && textarea.value.trim() && document.getElementById('jsonPreview').innerText.includes('等待转换')) {
+            handleConvert();
+        }
+    }
+
+    // 初始化看板原有功能
     async function init() {
         detectDarkMode();
         bindFilters();
         refreshBtn.addEventListener('click', forceRefresh);
-        // 初次加载数据
         await fetchHomeworkData();
+        // 初始化转换器模块 (确保DOM元素已存在)
+        initConverter();
     }
 
     init();
