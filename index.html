@@ -3,13 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="description" content="个人网站示例 - 用于Netlify部署测试，展示现代前端功能">
-    <title>林一 · 前端开发者 | Netlify测试站点</title>
-    <!-- Google Fonts & Font Awesome -->
+    <title>作业看板 · 动态数据同步</title>
+    <!-- Google Font & Font Awesome -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* ========== 全局样式 & 变量 ========== */
         * {
             margin: 0;
             padding: 0;
@@ -18,597 +16,479 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            transition: background 0.3s ease, color 0.2s ease;
-            scroll-behavior: smooth;
-            line-height: 1.5;
+            background: linear-gradient(145deg, #f0f4ff 0%, #e9effa 100%);
+            color: #1e293b;
+            padding: 2rem 1.5rem;
+            min-height: 100vh;
         }
 
-        /* 亮色主题变量 (默认) */
-        :root {
-            --bg-primary: #f9fafb;
-            --bg-secondary: #ffffff;
-            --text-primary: #111827;
-            --text-secondary: #4b5563;
-            --card-bg: #ffffff;
-            --border: #e5e7eb;
-            --primary: #3b82f6;
-            --primary-dark: #2563eb;
-            --shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.02);
-            --nav-bg: rgba(255,255,255,0.8);
-            --btn-outline: #1f2937;
-        }
-
-        /* 暗色主题 */
+        /* 暗色模式支持 (可选，根据系统或按钮) */
         body.dark {
-            --bg-primary: #0f172a;
-            --bg-secondary: #1e293b;
-            --text-primary: #f1f5f9;
-            --text-secondary: #cbd5e1;
-            --card-bg: #1e293b;
-            --border: #334155;
-            --nav-bg: rgba(15,23,42,0.9);
-            --btn-outline: #94a3b8;
-        }
-
-        /* 基础元素 */
-        a {
-            text-decoration: none;
-            color: inherit;
+            background: linear-gradient(145deg, #0f172a 0%, #111827 100%);
+            color: #e2e8f0;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 0 1.5rem;
         }
 
-        /* 导航栏 */
-        .navbar {
-            position: sticky;
-            top: 0;
-            backdrop-filter: blur(12px);
-            background: var(--nav-bg);
-            border-bottom: 1px solid var(--border);
-            z-index: 100;
-            padding: 0.75rem 0;
+        /* 头部区域 */
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.01em;
+        }
+        .header p {
+            color: #475569;
+            margin-top: 0.5rem;
+            font-weight: 500;
+        }
+        body.dark .header p {
+            color: #94a3b8;
         }
 
-        .nav-container {
+        /* 控制栏 (筛选 & 刷新) */
+        .controls {
             display: flex;
+            flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1.5rem;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: blur(12px);
+            padding: 1rem 1.8rem;
+            border-radius: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+        body.dark .controls {
+            background: rgba(30,41,59,0.7);
+            border-color: #334155;
+        }
+        .filter-group {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            background: transparent;
+            border: none;
+            padding: 0.4rem 1rem;
+            border-radius: 2rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            color: #334155;
+        }
+        body.dark .filter-btn {
+            color: #cbd5e1;
+        }
+        .filter-btn.active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 2px 8px rgba(59,130,246,0.3);
+        }
+        .refresh-btn {
+            background: #3b82f6;
+            border: none;
+            padding: 0.5rem 1.2rem;
+            border-radius: 2rem;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: 0.2s;
+        }
+        .refresh-btn:hover {
+            background: #2563eb;
+            transform: scale(0.97);
         }
 
-        .logo a {
+        /* 统计卡片 */
+        .stats {
+            display: flex;
+            gap: 1.2rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 0.8rem 1.6rem;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border: 1px solid #e2e8f0;
+        }
+        body.dark .stat-card {
+            background: #1e293b;
+            border-color: #334155;
+        }
+        .stat-icon {
+            font-size: 1.8rem;
+            color: #3b82f6;
+        }
+        .stat-info h3 {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        /* 作业网格 */
+        .homework-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.8rem;
+            margin-top: 0.5rem;
+        }
+        .homework-card {
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(4px);
+            border-radius: 1.8rem;
+            padding: 1.5rem;
+            transition: all 0.25s ease;
+            border: 1px solid rgba(255,255,255,0.6);
+            box-shadow: 0 12px 24px -12px rgba(0,0,0,0.1);
+        }
+        body.dark .homework-card {
+            background: rgba(30,41,59,0.8);
+            border-color: #334155;
+        }
+        .homework-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 30px -12px rgba(0,0,0,0.2);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        .subject {
             font-size: 1.5rem;
             font-weight: 700;
-            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            background: linear-gradient(120deg, #3b82f6, #a855f7);
             background-clip: text;
             -webkit-background-clip: text;
             color: transparent;
         }
-
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
-
-        .nav-links a {
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-
-        .nav-links a:hover {
-            color: var(--primary);
-        }
-
-        /* 主题切换按钮 */
-        .theme-toggle {
-            position: fixed;
-            bottom: 1.5rem;
-            right: 1.5rem;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 3rem;
-            width: 48px;
-            height: 48px;
-            cursor: pointer;
-            z-index: 200;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.3rem;
-            box-shadow: var(--shadow);
-            transition: all 0.2s;
-            color: var(--text-primary);
-        }
-        body.dark .theme-toggle .fa-sun { display: inline-block; }
-        body.dark .theme-toggle .fa-moon { display: none; }
-        .theme-toggle .fa-sun { display: none; }
-        .theme-toggle .fa-moon { display: inline-block; }
-
-        /* 公用 section */
-        .section {
-            padding: 5rem 0;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .section-title {
-            font-size: 2rem;
-            margin-bottom: 2rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        /* Hero */
-        .hero {
-            text-align: center;
-            background: linear-gradient(145deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
-        }
-        .hero-avatar {
-            font-size: 4rem;
-            background: var(--primary);
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1.5rem;
-            color: white;
-            box-shadow: 0 20px 30px -12px rgba(59,130,246,0.4);
-        }
-        .hero-title {
-            font-size: 3rem;
-            font-weight: 700;
-        }
-        .wave {
-            display: inline-block;
-            animation: wave 2s infinite;
-        }
-        @keyframes wave {
-            0%,100% { transform: rotate(0deg);}
-            25% { transform: rotate(20deg);}
-            75% { transform: rotate(-8deg);}
-        }
-        .hero-subtitle {
-            font-size: 1.3rem;
-            color: var(--primary);
-            font-weight: 500;
-            margin: 0.5rem 0;
-        }
-        .hero-description {
-            max-width: 600px;
-            margin: 1rem auto;
-            color: var(--text-secondary);
-        }
-        .hero-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            margin-top: 2rem;
-        }
-        .btn {
-            padding: 0.7rem 1.6rem;
+        .status-badge {
+            background: #f97316;
+            padding: 0.2rem 0.8rem;
             border-radius: 2rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: none;
-            font-family: inherit;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-        .btn-primary:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-        }
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--btn-outline);
-            color: var(--text-primary);
-        }
-        .btn-outline:hover {
-            border-color: var(--primary);
-            background: var(--primary);
-            color: white;
-        }
-
-        /* 关于 */
-        .about-text p {
-            margin-bottom: 1rem;
-            font-size: 1.05rem;
-            color: var(--text-secondary);
-        }
-        .highlight {
-            color: var(--primary);
-        }
-        .fun-fact {
-            margin-top: 1.5rem;
-            padding: 0.8rem 1.2rem;
-            background: var(--card-bg);
-            border-radius: 2rem;
-            display: inline-block;
-            border: 1px solid var(--border);
-        }
-
-        /* 技能网格 */
-        .skills-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-        .skill-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 2rem;
-            padding: 0.6rem 1.4rem;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: 0.1s;
-        }
-        /* 项目网格 */
-        .projects-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 2rem;
-        }
-        .project-card {
-            background: var(--card-bg);
-            border-radius: 1.5rem;
-            padding: 1.5rem;
-            border: 1px solid var(--border);
-            transition: all 0.25s;
-        }
-        .project-card:hover {
-            transform: translateY(-6px);
-            box-shadow: var(--shadow);
-        }
-        .project-icon {
-            font-size: 2.2rem;
-            margin-bottom: 0.8rem;
-            color: var(--primary);
-        }
-        .project-title {
-            font-size: 1.3rem;
-            margin-bottom: 0.5rem;
-        }
-        .project-desc {
-            color: var(--text-secondary);
-            margin-bottom: 1rem;
-            font-size: 0.9rem;
-        }
-        .project-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-        .tag {
-            background: var(--bg-primary);
-            border-radius: 1rem;
-            padding: 0.2rem 0.7rem;
             font-size: 0.7rem;
-            font-weight: 500;
+            font-weight: 600;
+            color: white;
+            letter-spacing: 0.3px;
         }
-
-        /* 联系区域 */
-        .contact-wrapper {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 2rem;
-            justify-content: space-between;
-            align-items: flex-start;
+        .status-badge.completed {
+            background: #10b981;
         }
-        .contact-info {
-            flex: 2;
+        .homework-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 0.75rem 0 0.5rem;
+            line-height: 1.4;
+        }
+        .detail {
             display: flex;
             flex-direction: column;
-            gap: 1.8rem;
+            gap: 0.6rem;
+            margin-top: 1rem;
+            border-top: 1px dashed #cbd5e1;
+            padding-top: 1rem;
         }
-        .contact-item {
+        body.dark .detail {
+            border-top-color: #475569;
+        }
+        .detail-item {
             display: flex;
-            gap: 1rem;
             align-items: center;
+            gap: 0.7rem;
+            font-size: 0.85rem;
+            color: #475569;
         }
-        .contact-item i {
-            font-size: 1.8rem;
-            color: var(--primary);
-            width: 2.5rem;
+        body.dark .detail-item {
+            color: #cbd5e1;
         }
-        .copy-btn {
-            background: transparent;
-            border: 1px solid var(--border);
-            padding: 0.25rem 0.8rem;
-            border-radius: 1rem;
-            margin-top: 0.3rem;
-            cursor: pointer;
+        .detail-item i {
+            width: 1.4rem;
+            color: #3b82f6;
+        }
+        .deadline {
+            margin-top: 0.6rem;
             font-size: 0.75rem;
-            font-family: inherit;
-            color: var(--text-secondary);
-            transition: 0.1s;
+            background: #eef2ff;
+            display: inline-block;
+            padding: 0.2rem 0.8rem;
+            border-radius: 1rem;
+            font-weight: 500;
         }
-        .copy-btn:hover {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
+        body.dark .deadline {
+            background: #2d3a5e;
         }
-        .visit-card {
-            background: var(--card-bg);
-            border-radius: 1.5rem;
-            padding: 1.2rem 1.8rem;
-            border: 1px solid var(--border);
+        .loading {
             text-align: center;
-            min-width: 180px;
-            flex: 1;
+            padding: 3rem;
+            font-size: 1.2rem;
+            color: #3b82f6;
         }
-        .visit-count {
-            font-size: 2.5rem;
-            font-weight: 800;
-            display: block;
-            line-height: 1;
-            color: var(--primary);
+        .error-message {
+            background: #fee2e2;
+            color: #b91c1c;
+            padding: 1rem;
+            border-radius: 1rem;
+            text-align: center;
         }
-        .toast-message {
-            position: fixed;
-            bottom: 5rem;
-            left: 50%;
-            transform: translateX(-50%) scale(0.8);
-            background: var(--primary);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 2rem;
-            font-size: 0.8rem;
-            opacity: 0;
-            transition: opacity 0.2s, transform 0.2s;
-            pointer-events: none;
-            z-index: 300;
-        }
-        .toast-message.show {
-            opacity: 1;
-            transform: translateX(-50%) scale(1);
-        }
-
         footer {
             text-align: center;
-            padding: 2rem 0;
-            border-top: 1px solid var(--border);
-            color: var(--text-secondary);
+            margin-top: 3rem;
+            font-size: 0.8rem;
+            color: #64748b;
         }
-        @media (max-width: 700px) {
-            .nav-links { gap: 1rem; }
-            .hero-title { font-size: 2rem; }
-            .section-title { font-size: 1.6rem; }
+        @media (max-width: 680px) {
+            body { padding: 1rem; }
+            .controls { flex-direction: column; align-items: stretch; }
         }
     </style>
 </head>
 <body>
+<div class="container">
+    <div class="header">
+        <h1><i class="fas fa-tasks"></i> 作业看板 · 动态同步</h1>
+        <p>数据源来自 Gitee 仓库 | 实时渲染 | 支持筛选与状态追踪</p>
+    </div>
 
-    <button class="theme-toggle" id="themeToggle" aria-label="切换深色/浅色模式">
-        <i class="fas fa-moon"></i>
-        <i class="fas fa-sun"></i>
-    </button>
-
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="logo"><a href="#">Lin Yi</a></div>
-            <ul class="nav-links">
-                <li><a href="#home">首页</a></li>
-                <li><a href="#about">关于</a></li>
-                <li><a href="#skills">技能</a></li>
-                <li><a href="#projects">项目</a></li>
-                <li><a href="#contact">联系</a></li>
-            </ul>
+    <div class="controls">
+        <div class="filter-group" id="filterGroup">
+            <button class="filter-btn active" data-filter="all">全部</button>
+            <button class="filter-btn" data-filter="未完成">未完成</button>
+            <button class="filter-btn" data-filter="已完成">已完成</button>
         </div>
-    </nav>
+        <button class="refresh-btn" id="refreshBtn"><i class="fas fa-sync-alt"></i> 同步数据</button>
+    </div>
 
-    <main>
-        <section id="home" class="hero section">
-            <div class="container hero-content">
-                <div class="hero-avatar"><i class="fas fa-code"></i></div>
-                <h1 class="hero-title">林一 <span class="wave">👋</span></h1>
-                <p class="hero-subtitle">前端开发 & 创意技术专家</p>
-                <p class="hero-description">热爱构建美观、响应式且富有交互的Web应用。目前在Netlify上部署测试，探索现代工作流。</p>
-                <div class="hero-buttons">
-                    <button class="btn btn-primary" id="greetBtn"><i class="fas fa-smile"></i> 打个招呼</button>
-                    <a href="#projects" class="btn btn-outline">查看作品 <i class="fas fa-arrow-down"></i></a>
-                </div>
-            </div>
-        </section>
+    <div class="stats" id="statsArea">
+        <div class="stat-card"><i class="fas fa-list-ul stat-icon"></i><div class="stat-info"><h3>总作业</h3><span class="stat-number" id="totalCount">0</span></div></div>
+        <div class="stat-card"><i class="fas fa-hourglass-half stat-icon"></i><div class="stat-info"><h3>未完成</h3><span class="stat-number" id="pendingCount">0</span></div></div>
+        <div class="stat-card"><i class="fas fa-check-circle stat-icon"></i><div class="stat-info"><h3>已完成</h3><span class="stat-number" id="completedCount">0</span></div></div>
+    </div>
 
-        <section id="about" class="section about">
-            <div class="container">
-                <h2 class="section-title"><i class="fas fa-user-astronaut"></i> 关于我</h2>
-                <div class="about-content">
-                    <div class="about-text">
-                        <p>嗨！我是一名全栈偏向前端开发者，拥有3年以上构建现代Web应用的经验。我相信代码既是艺术也是工程。我喜欢探索新的UI技术、开源贡献，并在空闲时间撰写技术博客。</p>
-                        <p>这个网站用于<strong class="highlight">Netlify部署测试</strong> — 包含了暗色/亮色主题、访问计数、动态渲染项目/技能、平滑滚动等特性。完全响应式，并展示了前端最佳实践。</p>
-                        <div class="fun-fact"><i class="fas fa-coffee"></i> 咖啡因驱动 · 4个已完成项目 · 无限好奇心</div>
+    <div id="homeworkContainer" class="homework-grid">
+        <div class="loading"><i class="fas fa-spinner fa-pulse"></i> 正在加载作业数据...</div>
+    </div>
+    <footer>📌 数据来源于 Gitee 仓库中的 homework.json 文件 | 自动刷新 | 支持暗色跟随系统</footer>
+</div>
+
+<script>
+    // ---------- 配置区域 ----------
+    // 请将您的 homework.json 文件放在 Gitee 仓库的根目录，并确保仓库公开（或至少文件可公开访问）
+    // 原始 raw 地址格式：https://gitee.com/pepsi-666/xiao-jie/raw/master/homework.json
+    const DATA_URL = 'https://gitee.com/pepsi-666/xiao-jie/raw/master/homework.json';
+    
+    // 备用本地示例数据（当网络请求失败时使用，也作为初始化演示）
+    const FALLBACK_DATA = [
+        { "subject": "Linux", "status": "未完成", "homeworkName": "4.10习题", "platform": "雨课堂", "startDate": "3.30", "endDate": "4.18" },
+        { "subject": "编译原理", "status": "未完成", "homeworkName": "作业5-正规式与有限自动机理论", "platform": "学习通", "startDate": "3.30", "endDate": "4.3" },
+        { "subject": "嵌入式系统", "status": "未完成", "homeworkName": "控制海龟移动", "platform": "学习通", "startDate": "3.13", "endDate": "暂定" }
+    ];
+
+    let currentHomeworkList = [];      // 存储原始数据
+    let currentFilter = 'all';         // all, 未完成, 已完成
+
+    // DOM 元素
+    const container = document.getElementById('homeworkContainer');
+    const totalSpan = document.getElementById('totalCount');
+    const pendingSpan = document.getElementById('pendingCount');
+    const completedSpan = document.getElementById('completedCount');
+    const refreshBtn = document.getElementById('refreshBtn');
+
+    // 辅助函数：渲染统计数字
+    function updateStats(list) {
+        const total = list.length;
+        const pending = list.filter(item => item.status === '未完成').length;
+        const completed = list.filter(item => item.status === '已完成').length;
+        totalSpan.innerText = total;
+        pendingSpan.innerText = pending;
+        completedSpan.innerText = completed;
+    }
+
+    // 辅助：计算剩余天数或提示
+    function getDeadlineMessage(endDate) {
+        if (!endDate || endDate === '暂定') return '⏳ 截止日期暂定';
+        // 尝试解析月.日 例如 "4.18" -> 2026年4月18日 (年份按当前年处理)
+        const parts = endDate.split('.');
+        if (parts.length === 2) {
+            const now = new Date();
+            const year = now.getFullYear();
+            let targetDate = new Date(year, parseInt(parts[0])-1, parseInt(parts[1]));
+            if (targetDate < now) targetDate = new Date(year+1, parseInt(parts[0])-1, parseInt(parts[1])); // 跨年补偿
+            const diffDays = Math.ceil((targetDate - now) / (1000 * 60 * 60 * 24));
+            if (diffDays < 0) return `⚠️ 已过期 ${Math.abs(diffDays)} 天`;
+            if (diffDays === 0) return '🔥 今天截止';
+            return `📅 剩余 ${diffDays} 天`;
+        }
+        return `📅 截止 ${endDate}`;
+    }
+
+    // 渲染作业卡片 (根据 currentFilter 筛选)
+    function renderHomeworks() {
+        if (!currentHomeworkList.length) {
+            container.innerHTML = `<div class="error-message"><i class="fas fa-database"></i> 暂无作业数据，请点击同步或检查网络</div>`;
+            updateStats([]);
+            return;
+        }
+        let filteredList = currentHomeworkList;
+        if (currentFilter !== 'all') {
+            filteredList = currentHomeworkList.filter(item => item.status === currentFilter);
+        }
+        updateStats(currentHomeworkList);  // 统计基于全量数据，但展示基于筛选
+
+        if (filteredList.length === 0) {
+            container.innerHTML = `<div class="error-message"><i class="fas fa-filter"></i> 没有找到“${currentFilter}”状态的作业～</div>`;
+            return;
+        }
+
+        const cardsHtml = filteredList.map(hw => {
+            const statusClass = hw.status === '已完成' ? 'completed' : '';
+            const deadlineMsg = getDeadlineMessage(hw.endDate);
+            return `
+                <div class="homework-card">
+                    <div class="card-header">
+                        <span class="subject">${escapeHtml(hw.subject)}</span>
+                        <span class="status-badge ${statusClass}">${hw.status}</span>
+                    </div>
+                    <div class="homework-name">📖 ${escapeHtml(hw.homeworkName)}</div>
+                    <div class="detail">
+                        <div class="detail-item"><i class="fas fa-chalkboard-user"></i> 平台：${escapeHtml(hw.platform)}</div>
+                        <div class="detail-item"><i class="fas fa-calendar-alt"></i> 开始：${escapeHtml(hw.startDate)}</div>
+                        <div class="detail-item"><i class="fas fa-flag-checkered"></i> 结束：${escapeHtml(hw.endDate)}</div>
+                        <div class="deadline"><i class="far fa-clock"></i> ${deadlineMsg}</div>
                     </div>
                 </div>
-            </div>
-        </section>
+            `;
+        }).join('');
+        container.innerHTML = cardsHtml;
+    }
 
-        <section id="skills" class="section skills">
-            <div class="container">
-                <h2 class="section-title"><i class="fas fa-cogs"></i> 技术栈</h2>
-                <div class="skills-grid" id="skillsGrid"></div>
-            </div>
-        </section>
-
-        <section id="projects" class="section projects">
-            <div class="container">
-                <h2 class="section-title"><i class="fas fa-laptop-code"></i> 精选项目</h2>
-                <div class="projects-grid" id="projectsGrid"></div>
-            </div>
-        </section>
-
-        <section id="contact" class="section contact">
-            <div class="container">
-                <h2 class="section-title"><i class="fas fa-paper-plane"></i> 保持联系</h2>
-                <div class="contact-wrapper">
-                    <div class="contact-info">
-                        <div class="contact-item"><i class="fas fa-envelope"></i><div><h4>邮箱</h4><p id="emailAddress">linyi@example.dev</p><button class="copy-btn" id="copyEmailBtn"><i class="far fa-copy"></i> 复制邮箱</button></div></div>
-                        <div class="contact-item"><i class="fab fa-github"></i><div><h4>GitHub</h4><p>github.com/linyi-dev</p></div></div>
-                        <div class="contact-item"><i class="fab fa-linkedin"></i><div><h4>LinkedIn</h4><p>linkedin.com/in/linyi</p></div></div>
-                    </div>
-                    <div class="visit-card">
-                        <i class="fas fa-chart-line"></i>
-                        <div><span class="visit-label">站点访问次数</span><span class="visit-count" id="visitCounter">0</span></div>
-                        <small>✨ 基于localStorage | Netlify测试</small>
-                    </div>
-                </div>
-                <div class="toast-message" id="toastMsg">📋 已复制到剪贴板</div>
-            </div>
-        </section>
-    </main>
-
-    <footer class="footer">
-        <div class="container">
-            <p>© 2025 林一 · 部署于 <i class="fab fa-netlify"></i> Netlify | 前端测试示例 | 暗色模式 / 动态组件</p>
-            <p class="footer-badge">✨ 完全响应式 · 现代交互 ✨</p>
-        </div>
-    </footer>
-
-    <script>
-        // 技能数据
-        const skillsData = [
-            { name: "React", icon: "fab fa-react" }, { name: "Vue", icon: "fab fa-vuejs" }, { name: "JavaScript", icon: "fab fa-js" },
-            { name: "TailwindCSS", icon: "fas fa-paint-brush" }, { name: "Node.js", icon: "fab fa-node-js" }, { name: "Git", icon: "fab fa-git-alt" }
-        ];
-        // 项目数据
-        const projectsData = [
-            { title: "智能仪表板", desc: "实时数据可视化仪表板，使用React + D3，支持暗色主题。", tags: ["React", "D3"], icon: "fas fa-chart-line" },
-            { title: "旅行日记", desc: "全栈博客平台，用户认证、Markdown支持，基于Vue + Express。", tags: ["Vue", "Node"], icon: "fas fa-map-marked-alt" },
-            { title: "Netlify 测试站点", desc: "本示例站点的完整代码，演示部署与主题切换/访客计数。", tags: ["HTML/CSS", "JS"], icon: "fab fa-netlify" },
-            { title: "组件库", desc: "开源设计系统，包含20+可复用组件，Storybook文档。", tags: ["Storybook", "CSS"], icon: "fas fa-palette" }
-        ];
-
-        function renderSkills() {
-            const container = document.getElementById('skillsGrid');
-            if(!container) return;
-            container.innerHTML = skillsData.map(skill => `
-                <div class="skill-card">
-                    <i class="${skill.icon}"></i> ${skill.name}
-                </div>
-            `).join('');
-        }
-
-        function renderProjects() {
-            const container = document.getElementById('projectsGrid');
-            if(!container) return;
-            container.innerHTML = projectsData.map(proj => `
-                <div class="project-card">
-                    <div class="project-icon"><i class="${proj.icon}"></i></div>
-                    <h3 class="project-title">${proj.title}</h3>
-                    <p class="project-desc">${proj.desc}</p>
-                    <div class="project-tags">
-                        ${proj.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // 访问计数器
-        function initVisitCounter() {
-            const counterSpan = document.getElementById('visitCounter');
-            let visits = localStorage.getItem('site_visits');
-            if(visits === null) {
-                visits = 1;
-            } else {
-                visits = Number(visits) + 1;
-            }
-            localStorage.setItem('site_visits', visits);
-            if(counterSpan) counterSpan.innerText = visits;
-        }
-
-        // 主题切换逻辑
-        function initTheme() {
-            const savedTheme = localStorage.getItem('theme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const isDark = savedTheme === 'dark' || (savedTheme === null && prefersDark);
-            if(isDark) document.body.classList.add('dark');
-            else document.body.classList.remove('dark');
-            const toggleBtn = document.getElementById('themeToggle');
-            toggleBtn?.addEventListener('click', () => {
-                document.body.classList.toggle('dark');
-                const nowDark = document.body.classList.contains('dark');
-                localStorage.setItem('theme', nowDark ? 'dark' : 'light');
-            });
-        }
-
-        // 打招呼弹窗（模拟toast）
-        function initGreeting() {
-            const btn = document.getElementById('greetBtn');
-            const toast = document.getElementById('toastMsg');
-            if(btn) {
-                btn.addEventListener('click', () => {
-                    showToast('👋 你好！感谢测试Netlify部署～ 欢迎访问我的个人站！');
-                });
-            }
-        }
-        function showToast(msg) {
-            const toast = document.getElementById('toastMsg');
-            if(!toast) return;
-            toast.innerText = msg || '📋 已复制到剪贴板';
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 2000);
-        }
-
-        // 复制邮箱功能
-        function initCopyEmail() {
-            const copyBtn = document.getElementById('copyEmailBtn');
-            const emailSpan = document.getElementById('emailAddress');
-            if(copyBtn && emailSpan) {
-                copyBtn.addEventListener('click', async () => {
-                    const email = emailSpan.innerText;
-                    try {
-                        await navigator.clipboard.writeText(email);
-                        showToast('📧 邮箱已复制: ' + email);
-                    } catch(e) {
-                        alert('手动复制吧：' + email);
-                    }
-                });
-            }
-        }
-
-        // 平滑滚动 + 导航高亮（简洁）
-        function initSmoothScroll() {
-            document.querySelectorAll('.nav-links a').forEach(anchor => {
-                anchor.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const targetId = this.getAttribute('href').substring(1);
-                    const target = document.getElementById(targetId);
-                    if(target) {
-                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                });
-            });
-        }
-
-        // 页面加载后执行所有初始化
-        document.addEventListener('DOMContentLoaded', () => {
-            renderSkills();
-            renderProjects();
-            initVisitCounter();
-            initTheme();
-            initGreeting();
-            initCopyEmail();
-            initSmoothScroll();
+    // 简单的防XSS
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+            return c;
         });
-    </script>
+    }
+
+    // 从远程加载数据
+    async function fetchHomeworkData() {
+        container.innerHTML = `<div class="loading"><i class="fas fa-spinner fa-pulse"></i> 正在从 Gitee 拉取最新数据...</div>`;
+        try {
+            const response = await fetch(DATA_URL, {
+                cache: 'no-store',
+                headers: { 'Accept': 'application/json' }
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const data = await response.json();
+            // 期望数据格式为数组，每个对象包含 subject, status, homeworkName, platform, startDate, endDate
+            if (Array.isArray(data) && data.length > 0) {
+                // 数据校验：确保每条记录都有必要字段
+                const validated = data.filter(item => item.subject && item.status && item.homeworkName);
+                if (validated.length === 0) throw new Error('数据格式无效，缺少必要字段');
+                currentHomeworkList = validated;
+                renderHomeworks();
+                // 存储到 localStorage 作为缓存
+                localStorage.setItem('cachedHomework', JSON.stringify(validated));
+            } else {
+                throw new Error('数据不是有效的作业数组');
+            }
+        } catch (err) {
+            console.warn('远程拉取失败，尝试使用缓存或后备数据', err);
+            // 尝试从 localStorage 读取缓存
+            const cached = localStorage.getItem('cachedHomework');
+            if (cached) {
+                try {
+                    const parsed = JSON.parse(cached);
+                    if (Array.isArray(parsed) && parsed.length) {
+                        currentHomeworkList = parsed;
+                        renderHomeworks();
+                        container.innerHTML = container.innerHTML + `<div style="margin-top:0.5rem; font-size:0.75rem; text-align:center;">⚠️ 使用本地缓存数据，最新内容未同步</div>`;
+                        return;
+                    }
+                } catch(e) {}
+            }
+            // 最终降级使用示例数据
+            currentHomeworkList = FALLBACK_DATA;
+            renderHomeworks();
+            container.innerHTML = container.innerHTML + `<div style="margin-top:1rem; padding:0.6rem; background:#fff2e0; border-radius:1rem; text-align:center;"><i class="fas fa-exclamation-triangle"></i> 无法连接远程数据源，当前显示内置示例。请确保 homework.json 已上传至仓库根目录且可公开访问。</div>`;
+        }
+    }
+
+    // 主动刷新（强制拉取，忽略缓存展示）
+    async function forceRefresh() {
+        await fetchHomeworkData();
+    }
+
+    // 切换筛选事件
+    function bindFilters() {
+        const btns = document.querySelectorAll('.filter-btn');
+        btns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const filterValue = btn.getAttribute('data-filter');
+                if (!filterValue) return;
+                // 更新激活样式
+                btns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = filterValue;
+                renderHomeworks();  // 重新渲染当前数据（不重新拉取）
+            });
+        });
+    }
+
+    // 检测系统暗色模式并应用（可选小细节）
+    function detectDarkMode() {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.body.classList.add('dark');
+        }
+        // 可添加手动切换，本示例仅跟随系统（增强美观）
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            if (e.matches) document.body.classList.add('dark');
+            else document.body.classList.remove('dark');
+        });
+    }
+
+    // 初始化
+    async function init() {
+        detectDarkMode();
+        bindFilters();
+        refreshBtn.addEventListener('click', forceRefresh);
+        // 初次加载数据
+        await fetchHomeworkData();
+    }
+
+    init();
+</script>
 </body>
 </html>
