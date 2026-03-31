@@ -801,8 +801,13 @@
         }
 
         // ---------- 全局变量 ----------
-        const DATA_URL = `https://api.allorigins.win/get?url=${encodeURIComponent('https://gitee.com/feng-xiaojie256/HomeWorkDate/raw/main/homework.json')}`;
-        const ANSWER_URL = `https://api.allorigins.win/get?url=${encodeURIComponent('https://gitee.com/feng-xiaojie256/HomeWorkDate/raw/main/Answer.json')}`;
+        const OWNER = "feng-xiaojie256";
+        const REPO = "HomeWorkDate";
+        const BRANCH = "main";
+
+        // 使用 Gitee API 直接获取文件，无需代理
+        const DATA_URL = `https://gitee.com/api/v5/repos/${OWNER}/${REPO}/contents/homework.json?ref=${BRANCH}`;
+        const ANSWER_URL = `https://gitee.com/api/v5/repos/${OWNER}/${REPO}/contents/Answer.json?ref=${BRANCH}`;
         let currentHomeworkList = [];      // 作业列表 (每个作业带 id)
         let answersMap = {};               // id -> { answer, attachments, lastUpdated }
         let currentFilter = 'all';
@@ -830,16 +835,32 @@
             });
         }
 
-        // 加载答案数据（无缓存回退）
+        // 通过 Gitee API 获取文件内容并解码
+        async function fetchFileViaAPI(url) {
+            const resp = await fetch(url);
+            if (!resp.ok) {
+                const errText = await resp.text();
+                throw new Error(`API 请求失败 (${resp.status}): ${errText.slice(0, 100)}`);
+            }
+            const data = await resp.json();
+            if (data.content) {
+                // API 返回的 content 是 base64 编码的字符串，需要正确解码 UTF-8
+                const binaryString = atob(data.content);
+                const bytes = new Uint8Array(binaryString.length);
+                for (let i = 0; i < binaryString.length; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                const decoded = new TextDecoder('utf-8').decode(bytes);
+                return JSON.parse(decoded);
+            } else {
+                throw new Error("API 返回数据中没有 content 字段");
+            }
+        }
+
+        // 加载答案数据
         async function fetchAnswers() {
             try {
-                const res = await fetch(ANSWER_URL, { cache: 'no-store' });
-                if (res.ok) {
-                    const data = await res.json();
-                    answersMap = data || {};
-                } else {
-                    answersMap = {};
-                }
+                answersMap = await fetchFileViaAPI(ANSWER_URL);
             } catch (err) {
                 console.warn('无法加载答案文件', err);
                 answersMap = {};
@@ -968,25 +989,25 @@
             });
         }
 
-        // 从仓库加载作业数据（不使用任何本地缓存/假数据）
+        // 从仓库加载作业数据（使用 Gitee API）
         async function fetchHomeworkData() {
             container.innerHTML = `<div class="full-width-msg loading"><i class="fas fa-spinner fa-pulse"></i> 正在拉取最新数据...</div>`;
             warningContainer.innerHTML = '';
             try {
-                const [homeRes, ansRes] = await Promise.all([
-                    fetch(DATA_URL, { cache: 'no-store' }),
-                    fetch(ANSWER_URL, { cache: 'no-store' }).catch(() => ({ ok: false }))
+                // 并行获取作业数据和答案数据
+                const [homeworkData, answersData] = await Promise.all([
+                    fetchFileViaAPI(DATA_URL),
+                    fetchFileViaAPI(ANSWER_URL).catch(() => ({}))
                 ]);
-                if (!homeRes.ok) throw new Error(`HTTP ${homeRes.status}`);
-                const data = await homeRes.json();
-                if (Array.isArray(data) && data.length) {
-                    let validated = data.filter(item => item.subject && item.status && item.homeworkName);
+
+                if (Array.isArray(homeworkData) && homeworkData.length) {
+                    let validated = homeworkData.filter(item => item.subject && item.status && item.homeworkName);
                     if (validated.length === 0) throw new Error('作业数据为空或不完整');
                     validated = ensureHomeworkIds(validated);
                     currentHomeworkList = validated;
                 } else throw new Error('无效数据格式');
-                if (ansRes.ok) answersMap = await ansRes.json();
-                else answersMap = {};
+
+                answersMap = answersData || {};
                 renderHomeworks();
             } catch (err) {
                 console.error(err);

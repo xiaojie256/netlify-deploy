@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Gitee 文件读取测试 (API方式)</title>
+    <style>
+        body { font-family: monospace; margin: 20px; background: #fff; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h2 { margin-top: 1.5rem; border-bottom: 1px solid #ccc; }
+        pre { background: #f5f5f5; padding: 12px; border: 1px solid #ddd; overflow-x: auto; white-space: pre-wrap; }
+        .error { color: #d33; background: #ffe0e0; padding: 8px; border-left: 4px solid #d33; }
+        button { margin-top: 10px; padding: 6px 12px; background: #eee; border: 1px solid #aaa; cursor: pointer; }
+        button:hover { background: #ddd; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📡 通过 Gitee API 读取文件 (无跨域问题)</h1>
+    <p>仓库：<code>feng-xiaojie256/HomeWorkDate</code> 分支：<code>main</code></p>
+    <p><button id="refreshBtn">🔄 重新获取</button></p>
+
+    <h2>📄 Answer.json</h2>
+    <div id="answerArea"><pre>加载中...</pre></div>
+
+    <h2>📄 homework.json</h2>
+    <div id="homeworkArea"><pre>加载中...</pre></div>
+    <hr>
+    <details>
+        <summary>📌 说明</summary>
+        <p>使用 Gitee API v5 获取文件内容：<br>
+        <code>https://gitee.com/api/v5/repos/owner/repo/contents/文件路径</code><br>
+        公开仓库无需 token，返回的 content 字段是 base64 编码，解码后即为原始内容。<br>
+        此方法无跨域限制，可直接在本地 HTML 中运行。
+        </p>
+    </details>
+</div>
+
+<script>
+    const OWNER = "feng-xiaojie256";
+    const REPO = "HomeWorkDate";
+    const BRANCH = "main";   // API 中通过 ref 参数指定分支
+
+    const files = [
+        { name: "Answer.json", path: "Answer.json", containerId: "answerArea" },
+        { name: "homework.json", path: "homework.json", containerId: "homeworkArea" }
+    ];
+
+    // 通过 Gitee API 获取文件内容
+    async function fetchFileViaAPI(filePath) {
+        const url = `https://gitee.com/api/v5/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(filePath)}?ref=${BRANCH}`;
+        const resp = await fetch(url);
+        if (!resp.ok) {
+            const errText = await resp.text();
+            throw new Error(`API 请求失败 (${resp.status}): ${errText.slice(0, 100)}`);
+        }
+        const data = await resp.json();
+        if (data.content) {
+            // API 返回的 content 是 base64 编码的字符串，需要解码
+            const decoded = atob(data.content);
+            return decoded;
+        } else {
+            throw new Error("API 返回数据中没有 content 字段");
+        }
+    }
+
+    async function displayFile(file) {
+        const container = document.getElementById(file.containerId);
+        container.innerHTML = "<pre>请求中...</pre>";
+        try {
+            const content = await fetchFileViaAPI(file.path);
+            // 尝试格式化 JSON（如果内容是合法 JSON）
+            let formatted = content;
+            try {
+                const parsed = JSON.parse(content);
+                formatted = JSON.stringify(parsed, null, 2);
+            } catch(e) {
+                // 保持原样，可能不是 JSON 文件
+            }
+            container.innerHTML = `<pre>${escapeHtml(formatted)}</pre>`;
+        } catch (err) {
+            container.innerHTML = `<div class="error">❌ 加载失败：${escapeHtml(err.message)}</div>`;
+        }
+    }
+
+    function escapeHtml(str) {
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    async function loadAll() {
+        for (const file of files) {
+            await displayFile(file);
+        }
+    }
+
+    document.getElementById("refreshBtn").addEventListener("click", () => loadAll());
+    loadAll();
+</script>
+</body>
+</html>
