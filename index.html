@@ -922,7 +922,7 @@
             if (currentFilter !== 'all') {
                 filteredList = currentHomeworkList.filter(item => item.status === currentFilter);
             }
-            updateStats(currentHomeworkList);
+            updateStats(filteredList);
             if (filteredList.length === 0) {
                 container.innerHTML = `<div class="full-width-msg error-message" style="background: transparent;">没有找到符合“${currentFilter}”状态的作业～</div>`;
                 return;
