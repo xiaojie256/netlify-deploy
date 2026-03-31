@@ -1096,17 +1096,52 @@
         // ---------- 答案生成助手 (无示例填充) ----------
         let latestAnswerJson = null;
         function generateAnswerSegment() {
-            const jobId = document.getElementById('answerJobId').value.trim();
+            const jobIdInput = document.getElementById('answerJobId').value.trim();
             const answerText = document.getElementById('answerContent').value.trim();
-            if (!jobId) { showToast('请填写作业ID', true); return; }
+            if (!jobIdInput) { showToast('请填写作业ID', true); return; }
+
+            // 新增：智能匹配作业ID逻辑
+            let finalJobId = null;
+
+            // 首先检查是否已经是完整ID（存在于作业列表中）
+            const jobExistsAsId = currentHomeworkList.find(hw => hw.id === jobIdInput);
+            if (jobExistsAsId) {
+                finalJobId = jobIdInput;
+            } else {
+                // 尝试匹配作业名称（homeworkName）
+                const matchingHomework = currentHomeworkList.find(hw =>
+                    hw.homeworkName === jobIdInput ||
+                    hw.homeworkName.replace(/[-\s]/g, '_') === jobIdInput
+                );
+
+                if (matchingHomework) {
+                    finalJobId = matchingHomework.id;
+                } else {
+                    // 如果还是没找到，尝试用输入作为作业名，与所有科目拼接后匹配
+                    for (const hw of currentHomeworkList) {
+                        const generatedId = generateId(hw.subject, jobIdInput);
+                        if (generatedId === hw.id) {
+                            finalJobId = hw.id;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!finalJobId) {
+                showToast(`⚠️ 未找到匹配的作业ID或作业名称: "${jobIdInput}"`, true);
+                // 不阻止生成，但给出警告（保持灵活性）
+                finalJobId = jobIdInput; // 使用原始输入作为后备
+            }
+
             const today = new Date().toISOString().slice(0, 10);
             const answerObj = {
                 answer: answerText || '(空答案)',
                 attachments: [],
                 lastUpdated: today
             };
-            const fullObj = { [jobId]: answerObj };
-            latestAnswerJson = JSON.stringify(fullObj, null, 2);
+            // 修改：直接序列化 answerObj，而非 { [finalJobId]: answerObj }
+            latestAnswerJson = JSON.stringify(answerObj, null, 2);
             const preview = document.getElementById('answerJsonPreview');
             preview.textContent = latestAnswerJson;
             preview.style.color = '#10b981';
