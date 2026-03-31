@@ -936,7 +936,10 @@
             }
             // 渲染 Markdown
             let answerHtml = answerData.answer || '无答案内容';
-            if (typeof marked !== 'undefined') {
+            // 修改：即使答案是"(空答案)"，也要继续处理attachments
+            if (answerData.answer === "(空答案)") {
+                answerHtml = ""; // 设置为空字符串，不显示"(空答案)"文本
+            } else if (typeof marked !== 'undefined') {
                 answerHtml = marked.parse(answerHtml);
             } else {
                 answerHtml = `<pre>${escapeHtml(answerHtml)}</pre>`;
@@ -945,7 +948,7 @@
             // 新增：处理纯图片URL的情况
             // 如果整个答案内容是一个图片URL，则直接显示为图片
             const imgUrlPattern = /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|bmp|webp|svg))$/i;
-            if (imgUrlPattern.test(answerData.answer.trim())) {
+            if (answerData.answer && imgUrlPattern.test(answerData.answer.trim())) {
                 let finalSrc = answerData.answer.trim();
                 // 如果是 Gitee 原始图片链接，尝试通过 API 获取 Base64
                 if (finalSrc.includes('gitee.com') && finalSrc.includes('/raw/')) {
@@ -960,7 +963,7 @@
                     }
                 }
                 answerHtml = `<img src="${escapeHtml(finalSrc)}" alt="答案图片" style="max-width: 100%; border-radius: 0.75rem;">`;
-            } else {
+            } else if (answerHtml) {
                 // 否则，处理答案内容中的独立图片URL行
                 const lines = answerHtml.split('\n');
                 const processedLines = [];
