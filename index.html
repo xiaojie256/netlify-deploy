@@ -894,8 +894,26 @@
             return `📅 截止 ${endDate}`;
         }
 
+        // 新增：将图片URL转换为Data URL
+        async function fetchImageAsDataUrl(url) {
+            try {
+                const resp = await fetch(url);
+                if (!resp.ok) throw new Error(`Failed to fetch image: ${resp.statusText}`);
+                const blob = await resp.blob();
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+            } catch (err) {
+                console.warn('Failed to convert image to data URL:', err);
+                return url; // fallback to original URL
+            }
+        }
+
         // 显示答案模态框
-        function showAnswer(作业id) {
+        async function showAnswer(作业id) {
             const answerData = answersMap[作业id];
             const modal = document.getElementById('answerModal');
             const bodyDiv = document.getElementById('modalAnswerBody');
@@ -920,18 +938,22 @@
             // 如果整个答案内容是一个图片URL，则直接显示为图片
             const imgUrlPattern = /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|bmp|webp|svg))$/i;
             if (imgUrlPattern.test(answerData.answer.trim())) {
-                answerHtml = `<img src="${escapeHtml(answerData.answer.trim())}" alt="答案图片" style="max-width: 100%; border-radius: 0.75rem;" referrerpolicy="no-referrer">`;
+                const dataUrl = await fetchImageAsDataUrl(answerData.answer.trim());
+                answerHtml = `<img src="${escapeHtml(dataUrl)}" alt="答案图片" style="max-width: 100%; border-radius: 0.75rem;">`;
             } else {
                 // 否则，处理答案内容中的独立图片URL行
                 const lines = answerHtml.split('\n');
-                const processedLines = lines.map(line => {
+                const processedLines = [];
+                for (const line of lines) {
                     // 检查是否整行是一个图片URL（去除HTML标签后）
                     const cleanLine = line.replace(/<[^>]*>/g, '').trim();
                     if (imgUrlPattern.test(cleanLine)) {
-                        return `<img src="${escapeHtml(cleanLine)}" alt="答案图片" style="max-width: 100%; border-radius: 0.75rem;" referrerpolicy="no-referrer">`;
+                        const dataUrl = await fetchImageAsDataUrl(cleanLine);
+                        processedLines.push(`<img src="${escapeHtml(dataUrl)}" alt="答案图片" style="max-width: 100%; border-radius: 0.75rem;">`);
+                    } else {
+                        processedLines.push(line);
                     }
-                    return line;
-                });
+                }
                 answerHtml = processedLines.join('\n');
             }
 
@@ -940,9 +962,9 @@
             let attachmentsHtml = '';
             if (answerData.attachments && answerData.attachments.length) {
                 attachmentsHtml = '<strong><i class="fas fa-paperclip"></i> 附件：</strong><br>';
-                answerData.attachments.forEach(url => {
+                for (const url of answerData.attachments) {
                     attachmentsHtml += `<a href="${escapeHtml(url)}" target="_blank"><i class="fas fa-external-link-alt"></i> ${escapeHtml(url)}</a><br>`;
-                });
+                }
             } else {
                 attachmentsHtml = '<em>无附件</em>';
             }
