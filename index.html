@@ -1,11 +1,16 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>作业看板 · 动态同步 + 智能转换器</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <title>作业看板 · 动态同步 + 答案系统</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Markdown 渲染库 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -37,6 +42,7 @@
             text-align: center;
             margin-bottom: 3rem;
         }
+
         .header h1 {
             font-size: 2.5rem;
             font-weight: 700;
@@ -46,11 +52,13 @@
             color: transparent;
             letter-spacing: -0.01em;
         }
+
         .header p {
             color: #475569;
             margin-top: 0.8rem;
             font-weight: 500;
         }
+
         body.dark .header p {
             color: #94a3b8;
         }
@@ -63,22 +71,25 @@
             align-items: center;
             gap: 1rem;
             margin-bottom: 2.5rem;
-            background: rgba(255,255,255,0.6);
+            background: rgba(255, 255, 255, 0.6);
             backdrop-filter: blur(12px);
             padding: 1rem 1.8rem;
             border-radius: 2rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-            border: 1px solid rgba(255,255,255,0.5);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.5);
         }
+
         body.dark .controls {
-            background: rgba(30,41,59,0.7);
+            background: rgba(30, 41, 59, 0.7);
             border-color: #334155;
         }
+
         .filter-group {
             display: flex;
             gap: 0.8rem;
             flex-wrap: wrap;
         }
+
         .filter-btn {
             background: transparent;
             border: none;
@@ -90,18 +101,22 @@
             font-family: inherit;
             color: #475569;
         }
+
         body.dark .filter-btn {
             color: #cbd5e1;
         }
+
         .filter-btn:hover {
-            background: rgba(59,130,246,0.1);
+            background: rgba(59, 130, 246, 0.1);
             color: #3b82f6;
         }
+
         .filter-btn.active {
             background: #3b82f6;
             color: white;
-            box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
         }
+
         .refresh-btn {
             background: #3b82f6;
             border: none;
@@ -114,13 +129,15 @@
             align-items: center;
             gap: 0.5rem;
             transition: all 0.2s ease;
-            box-shadow: 0 4px 12px rgba(59,130,246,0.25);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
         }
+
         .refresh-btn:hover {
             background: #2563eb;
             transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(59,130,246,0.35);
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.35);
         }
+
         .refresh-btn:active {
             transform: translateY(0);
         }
@@ -132,26 +149,30 @@
             flex-wrap: wrap;
             margin-bottom: 2rem;
         }
+
         .stat-card {
             flex: 1;
             min-width: 200px;
             background: white;
             border-radius: 1.5rem;
             padding: 1.2rem 1.6rem;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
             display: flex;
             align-items: center;
             gap: 1.2rem;
             border: 1px solid #f1f5f9;
             transition: transform 0.2s;
         }
+
         body.dark .stat-card {
             background: #1e293b;
             border-color: #334155;
         }
+
         .stat-card:hover {
             transform: translateY(-3px);
         }
+
         .stat-icon {
             font-size: 2.2rem;
             color: #3b82f6;
@@ -159,44 +180,54 @@
             padding: 1rem;
             border-radius: 1rem;
         }
+
         body.dark .stat-icon {
             background: #0f172a;
         }
+
         .stat-info h3 {
             font-size: 1rem;
             font-weight: 600;
             color: #64748b;
             margin-bottom: 0.3rem;
         }
+
         body.dark .stat-info h3 {
             color: #94a3b8;
         }
+
         .stat-number {
             font-size: 2rem;
             font-weight: 800;
             line-height: 1;
             color: #0f172a;
         }
+
         body.dark .stat-number {
             color: #f8fafc;
         }
 
-        /* 转换器卡片 */
-        .converter-card {
-            background: rgba(255,255,255,0.75);
+        /* 转换器卡片 通用样式 */
+        .converter-card,
+        .answer-helper-card {
+            background: rgba(255, 255, 255, 0.75);
             backdrop-filter: blur(8px);
             border-radius: 1.8rem;
             padding: 1.8rem;
             margin-bottom: 2.5rem;
-            border: 1px solid rgba(255,255,255,0.8);
-            box-shadow: 0 12px 24px -12px rgba(0,0,0,0.08);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 12px 24px -12px rgba(0, 0, 0, 0.08);
             transition: all 0.2s;
         }
-        body.dark .converter-card {
-            background: rgba(30,41,59,0.8);
+
+        body.dark .converter-card,
+        body.dark .answer-helper-card {
+            background: rgba(30, 41, 59, 0.8);
             border-color: #334155;
         }
-        .converter-header {
+
+        .converter-header,
+        .helper-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -204,7 +235,9 @@
             margin-bottom: 1.2rem;
             gap: 1rem;
         }
-        .converter-header h3 {
+
+        .converter-header h3,
+        .helper-header h3 {
             font-weight: 700;
             font-size: 1.4rem;
             background: linear-gradient(135deg, #3b82f6, #a855f7);
@@ -215,6 +248,7 @@
             align-items: center;
             gap: 0.5rem;
         }
+
         .magic-badge {
             font-size: 0.8rem;
             background: #eef2ff;
@@ -226,16 +260,19 @@
             align-items: center;
             gap: 0.4rem;
         }
+
         body.dark .magic-badge {
             background: #312e81;
             color: #c7d2fe;
         }
-        .converter-textarea {
+
+        .converter-textarea,
+        .answer-textarea {
             width: 100%;
             padding: 1.2rem;
             border-radius: 1.2rem;
             border: 2px solid #e2e8f0;
-            background: rgba(255,255,255,0.9);
+            background: rgba(255, 255, 255, 0.9);
             font-family: 'Inter', monospace;
             font-size: 0.95rem;
             line-height: 1.5;
@@ -243,62 +280,60 @@
             outline: none;
             transition: all 0.2s ease;
         }
-        body.dark .converter-textarea {
+
+        body.dark .converter-textarea,
+        body.dark .answer-textarea {
             background: #0f172a;
             border-color: #475569;
             color: #e2e8f0;
         }
-        .converter-textarea:focus {
+
+        .converter-textarea:focus,
+        .answer-textarea:focus {
             border-color: #3b82f6;
-            box-shadow: 0 0 0 4px rgba(59,130,246,0.15);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
         }
+
         .btn-group {
             display: flex;
             gap: 1rem;
             flex-wrap: wrap;
             margin: 1.2rem 0;
         }
+
         .btn-convert {
             background: #6366f1;
-            box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
         }
+
         .btn-convert:hover {
             background: #4f46e5;
         }
+
         .btn-copy {
             background: #10b981;
-            box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
         }
+
         .btn-copy:hover {
             background: #059669;
         }
-        .btn-example {
-            background: transparent;
-            border: 2px solid #cbd5e1;
-            color: #475569;
-            box-shadow: none;
-        }
-        body.dark .btn-example {
-            color: #cbd5e1;
-            border-color: #475569;
-        }
-        .btn-example:hover {
-            background: rgba(59,130,246,0.05);
-            border-color: #3b82f6;
-            color: #3b82f6;
-        }
+
         .json-result {
-            background: rgba(0,0,0,0.03);
+            background: rgba(0, 0, 0, 0.03);
             border-radius: 1rem;
             padding: 1.2rem;
             margin-top: 0.8rem;
             border: 1px solid #e2e8f0;
         }
+
         body.dark .json-result {
             background: #0f172a;
             border-color: #334155;
         }
-        #jsonPreview {
+
+        #jsonPreview,
+        #answerJsonPreview {
             margin: 0;
             font-family: 'Monaco', 'Menlo', 'Cascadia Code', monospace;
             font-size: 0.9rem;
@@ -306,9 +341,12 @@
             word-break: break-all;
             color: #334155;
         }
-        body.dark #jsonPreview {
+
+        body.dark #jsonPreview,
+        body.dark #answerJsonPreview {
             color: #cbd5e6;
         }
+
         .format-hint {
             font-size: 0.8rem;
             margin-top: 0.8rem;
@@ -317,8 +355,296 @@
             align-items: center;
             gap: 0.4rem;
         }
+
         body.dark .format-hint {
             color: #94a3b8;
+        }
+
+        /* 作业网格 */
+        .homework-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1.8rem;
+            margin-top: 0.5rem;
+        }
+
+        .homework-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(4px);
+            border-radius: 1.8rem;
+            padding: 1.6rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+        }
+
+        body.dark .homework-card {
+            background: rgba(30, 41, 59, 0.8);
+            border-color: #334155;
+        }
+
+        .homework-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 35px -12px rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.2rem;
+        }
+
+        .subject {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(120deg, #3b82f6, #a855f7);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            line-height: 1.2;
+        }
+
+        .status-badge {
+            background: #f97316;
+            padding: 0.3rem 0.8rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: white;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 10px rgba(249, 115, 22, 0.2);
+        }
+
+        .status-badge.completed {
+            background: #10b981;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
+        }
+
+        .homework-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0 0 1rem 0;
+            line-height: 1.5;
+            flex-grow: 1;
+        }
+
+        .detail {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            border-top: 1px dashed #cbd5e1;
+            padding-top: 1.2rem;
+        }
+
+        body.dark .detail {
+            border-top-color: #475569;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 0.9rem;
+            color: #475569;
+            font-weight: 500;
+        }
+
+        body.dark .detail-item {
+            color: #cbd5e1;
+        }
+
+        .detail-item i {
+            width: 1.4rem;
+            text-align: center;
+            color: #3b82f6;
+            font-size: 1rem;
+        }
+
+        .deadline {
+            margin-top: 0.8rem;
+            font-size: 0.8rem;
+            background: #eef2ff;
+            color: #4f46e5;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 1rem;
+            border-radius: 1rem;
+            font-weight: 600;
+            align-self: flex-start;
+        }
+
+        body.dark .deadline {
+            background: #2d3a5e;
+            color: #c7d2fe;
+        }
+
+        .answer-btn {
+            margin-top: 1rem;
+            background: #8b5cf6;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            justify-content: center;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        .answer-btn:hover {
+            background: #7c3aed;
+            transform: translateY(-2px);
+        }
+
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(6px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 2rem;
+            max-width: 800px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 2rem;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        body.dark .modal-content {
+            background: #1e293b;
+            color: #e2e8f0;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 0.75rem;
+        }
+
+        body.dark .modal-header {
+            border-bottom-color: #475569;
+        }
+
+        .modal-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .close-modal {
+            font-size: 1.8rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: #64748b;
+        }
+
+        body.dark .close-modal {
+            color: #cbd5e1;
+        }
+
+        .close-modal:hover {
+            color: #ef4444;
+        }
+
+        .answer-content {
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+
+        .answer-content img {
+            max-width: 100%;
+            border-radius: 0.75rem;
+        }
+
+        .attachments-list {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .attachments-list a {
+            color: #3b82f6;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-right: 1rem;
+        }
+
+        .last-updated {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 1rem;
+            text-align: right;
+        }
+
+        /* 其他公用 */
+        .full-width-msg {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+        }
+
+        .loading {
+            font-size: 1.2rem;
+            color: #3b82f6;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #f87171;
+            font-weight: 500;
+        }
+
+        .warning-message {
+            background: #fef3c7;
+            color: #b45309;
+            border: 1px solid #fbbf24;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e2e8f0;
+            font-size: 0.85rem;
+            color: #64748b;
         }
 
         .copy-toast {
@@ -337,311 +663,275 @@
             pointer-events: none;
             backdrop-filter: blur(8px);
             font-weight: 500;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
+
         .copy-toast.show {
             opacity: 1;
             transform: translateX(-50%) translateY(0);
         }
 
-        /* 作业网格 */
-        .homework-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 1.8rem;
-            margin-top: 0.5rem;
-        }
-        .homework-card {
-            background: rgba(255,255,255,0.85);
-            backdrop-filter: blur(4px);
-            border-radius: 1.8rem;
-            padding: 1.6rem;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(255,255,255,0.6);
-            box-shadow: 0 10px 25px -10px rgba(0,0,0,0.08);
-            display: flex;
-            flex-direction: column;
-        }
-        body.dark .homework-card {
-            background: rgba(30,41,59,0.8);
-            border-color: #334155;
-        }
-        .homework-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 35px -12px rgba(59,130,246,0.15);
-            border-color: rgba(59,130,246,0.3);
-        }
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 1.2rem;
-        }
-        .subject {
-            font-size: 1.5rem;
-            font-weight: 700;
-            background: linear-gradient(120deg, #3b82f6, #a855f7);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-            line-height: 1.2;
-        }
-        .status-badge {
-            background: #f97316;
-            padding: 0.3rem 0.8rem;
-            border-radius: 2rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: white;
-            letter-spacing: 0.5px;
-            box-shadow: 0 4px 10px rgba(249,115,22,0.2);
-        }
-        .status-badge.completed {
-            background: #10b981;
-            box-shadow: 0 4px 10px rgba(16,185,129,0.2);
-        }
-        .homework-name {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin: 0 0 1rem 0;
-            line-height: 1.5;
-            flex-grow: 1;
-        }
-        .detail {
-            display: flex;
-            flex-direction: column;
-            gap: 0.8rem;
-            border-top: 1px dashed #cbd5e1;
-            padding-top: 1.2rem;
-        }
-        body.dark .detail {
-            border-top-color: #475569;
-        }
-        .detail-item {
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-            font-size: 0.9rem;
-            color: #475569;
-            font-weight: 500;
-        }
-        body.dark .detail-item {
-            color: #cbd5e1;
-        }
-        .detail-item i {
-            width: 1.4rem;
-            text-align: center;
-            color: #3b82f6;
-            font-size: 1rem;
-        }
-        .deadline {
-            margin-top: 0.8rem;
-            font-size: 0.8rem;
-            background: #eef2ff;
-            color: #4f46e5;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.4rem 1rem;
-            border-radius: 1rem;
-            font-weight: 600;
-            align-self: flex-start;
-        }
-        body.dark .deadline {
-            background: #2d3a5e;
-            color: #c7d2fe;
-        }
-
-        /* 状态与错误信息占据全宽 */
-        .full-width-msg {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 2.5rem;
-            border-radius: 1.5rem;
-        }
-        .loading {
-            font-size: 1.2rem;
-            color: #3b82f6;
-            background: rgba(255,255,255,0.5);
-            backdrop-filter: blur(4px);
-        }
-        body.dark .loading {
-            background: rgba(30,41,59,0.5);
-        }
-        .error-message {
-            background: #fee2e2;
-            color: #b91c1c;
-            border: 1px solid #f87171;
-            font-weight: 500;
-            font-size: 1.1rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.8rem;
-        }
-        body.dark .error-message {
-            background: rgba(185,28,28,0.1);
-            border-color: #991b1b;
-            color: #fca5a5;
-        }
-        .warning-message {
-            background: #fef3c7;
-            color: #b45309;
-            border: 1px solid #fbbf24;
-            font-weight: 500;
-            margin-bottom: 1.5rem;
-            padding: 1rem;
-            border-radius: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-        body.dark .warning-message {
-            background: rgba(245,158,11,0.1);
-            border-color: #b45309;
-            color: #fcd34d;
-        }
-
-        footer {
-            text-align: center;
-            margin-top: 4rem;
-            padding-top: 2rem;
-            border-top: 1px solid #e2e8f0;
-            font-size: 0.85rem;
-            color: #64748b;
-            line-height: 1.6;
-        }
-        body.dark footer {
-            border-top-color: #334155;
-            color: #94a3b8;
-        }
         @media (max-width: 768px) {
-            body { padding: 1.5rem 1rem; }
-            .controls { flex-direction: column; align-items: stretch; }
-            .filter-group { justify-content: center; }
-            .btn-group { justify-content: stretch; }
-            .btn-group button { flex: 1; justify-content: center; }
-            .stats { flex-direction: column; }
-            .stat-card { width: 100%; }
+            body {
+                padding: 1.5rem 1rem;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-group {
+                justify-content: center;
+            }
+
+            .btn-group {
+                justify-content: stretch;
+            }
+
+            .stats {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
+
 <body>
-<div class="container">
-    <div class="header">
-        <h1><i class="fas fa-tasks"></i> 作业看板 · 动态同步</h1>
-        <p>数据源来自 GitHub 仓库 | 实时渲染 | 支持筛选与状态追踪</p>
-    </div>
-
-    <div class="controls">
-        <div class="filter-group" id="filterGroup">
-            <button class="filter-btn active" data-filter="all">全部</button>
-            <button class="filter-btn" data-filter="未完成">未完成</button>
-            <button class="filter-btn" data-filter="已完成">已完成</button>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-tasks"></i> 作业看板 · 答案系统</h1>
+            <p>数据源 GitHub | 支持作业答案查看 | 智能生成工具</p>
         </div>
-        <button class="refresh-btn" id="refreshBtn"><i class="fas fa-sync-alt"></i> 同步数据</button>
-    </div>
 
-    <div class="stats" id="statsArea">
-        <div class="stat-card"><i class="fas fa-list-ul stat-icon"></i><div class="stat-info"><h3>总作业</h3><span class="stat-number" id="totalCount">0</span></div></div>
-        <div class="stat-card"><i class="fas fa-hourglass-half stat-icon"></i><div class="stat-info"><h3>未完成</h3><span class="stat-number" id="pendingCount">0</span></div></div>
-        <div class="stat-card"><i class="fas fa-check-circle stat-icon"></i><div class="stat-info"><h3>已完成</h3><span class="stat-number" id="completedCount">0</span></div></div>
-    </div>
-
-    <div class="converter-card">
-        <div class="converter-header">
-            <h3><i class="fas fa-exchange-alt"></i> 作业文本转换助手</h3>
-            <span class="magic-badge"><i class="fas fa-magic"></i> 智能解析 → JSON</span>
+        <div class="controls">
+            <div class="filter-group" id="filterGroup">
+                <button class="filter-btn active" data-filter="all">全部</button>
+                <button class="filter-btn" data-filter="未完成">未完成</button>
+                <button class="filter-btn" data-filter="已完成">已完成</button>
+            </div>
+            <button class="refresh-btn" id="refreshBtn"><i class="fas fa-sync-alt"></i> 同步数据</button>
         </div>
-        <textarea id="inputHomeworkText" class="converter-textarea" rows="6" placeholder="请在此粘贴作业信息。支持包含 科目、状态、作业名称、平台、开始日期、结束日期 的纯文本内容。"></textarea>
-        <div class="btn-group">
-            <button id="convertBtn" class="refresh-btn btn-convert"><i class="fas fa-code"></i> 转换为JSON</button>
-            <button id="copyJsonBtn" class="refresh-btn btn-copy"><i class="fas fa-copy"></i> 复制JSON</button>
-            <button id="exampleBtn" class="refresh-btn btn-example"><i class="fas fa-arrow-down"></i> 填充示例</button>
+
+        <div class="stats" id="statsArea">
+            <div class="stat-card"><i class="fas fa-list-ul stat-icon"></i>
+                <div class="stat-info">
+                    <h3>总作业</h3><span class="stat-number" id="totalCount">0</span>
+                </div>
+            </div>
+            <div class="stat-card"><i class="fas fa-hourglass-half stat-icon"></i>
+                <div class="stat-info">
+                    <h3>未完成</h3><span class="stat-number" id="pendingCount">0</span>
+                </div>
+            </div>
+            <div class="stat-card"><i class="fas fa-check-circle stat-icon"></i>
+                <div class="stat-info">
+                    <h3>已完成</h3><span class="stat-number" id="completedCount">0</span>
+                </div>
+            </div>
         </div>
-        <div class="json-result">
-            <pre id="jsonPreview">⚡ 等待输入文本进行转换...</pre>
+
+        <!-- 作业文本转换助手 (仅用于生成符合格式的JSON，不含示例数据) -->
+        <div class="converter-card">
+            <div class="converter-header">
+                <h3><i class="fas fa-exchange-alt"></i> 作业文本转换助手</h3>
+                <span class="magic-badge"><i class="fas fa-magic"></i> 智能解析 → JSON (含id)</span>
+            </div>
+            <textarea id="inputHomeworkText" class="converter-textarea" rows="6"
+                placeholder="请在此粘贴作业信息。支持科目、状态、作业名称、平台、起止日期。转换后将自动生成唯一ID。"></textarea>
+            <div class="btn-group">
+                <button id="convertBtn" class="refresh-btn btn-convert"><i class="fas fa-code"></i> 转换为JSON</button>
+                <button id="copyJsonBtn" class="refresh-btn btn-copy"><i class="fas fa-copy"></i> 复制JSON</button>
+            </div>
+            <div class="json-result">
+                <pre id="jsonPreview">⚡ 等待输入文本进行转换...</pre>
+            </div>
+            <div class="format-hint"><i class="fas fa-info-circle"></i> 自动生成作业ID (科目_作业名)，便于与答案关联。</div>
         </div>
-        <div class="format-hint"><i class="fas fa-info-circle"></i> 支持格式：科目/状态行(#作业/作业详情/未完成 或 状态：未完成) + 作业/平台/起止日期</div>
+
+        <!-- 答案生成助手 (仅用于生成Answer.json片段，不含示例数据) -->
+        <div class="answer-helper-card">
+            <div class="helper-header">
+                <h3><i class="fas fa-file-alt"></i> 答案生成助手</h3>
+                <span class="magic-badge"><i class="fas fa-magic"></i> 生成 Answer.json 片段</span>
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label style="font-weight: 600;"><i class="fas fa-tag"></i> 作业ID (与homework.json中的id匹配):</label>
+                <input type="text" id="answerJobId" class="converter-textarea" style="padding: 0.8rem;"
+                    placeholder="例如: 嵌入式系统_控制海龟移动">
+            </div>
+            <textarea id="answerContent" class="answer-textarea" rows="6"
+                placeholder="在此输入答案内容 (支持 Markdown 语法)"></textarea>
+            <div class="btn-group">
+                <button id="generateAnswerBtn" class="refresh-btn btn-convert"><i class="fas fa-code"></i>
+                    生成答案JSON</button>
+                <button id="copyAnswerJsonBtn" class="refresh-btn btn-copy"><i class="fas fa-copy"></i> 复制JSON</button>
+            </div>
+            <div class="json-result">
+                <pre id="answerJsonPreview">✨ 填写作业ID和答案后点击生成...</pre>
+            </div>
+            <div class="format-hint"><i class="fas fa-info-circle"></i> lastUpdated 自动获取当前日期，attachments 默认为空数组，可按需修改。
+            </div>
+        </div>
+
+        <div id="warningContainer"></div>
+        <div id="homeworkContainer" class="homework-grid">
+            <div class="full-width-msg loading"><i class="fas fa-spinner fa-pulse"></i> 正在加载作业数据...</div>
+        </div>
+        <footer>📌 数据来源于 GitHub 仓库中的 homework.json 和 Answer.json | 已完成作业可查看答案 | 答案助手生成符合格式的JSON片段</footer>
     </div>
 
-    <div id="warningContainer"></div>
-
-    <div id="homeworkContainer" class="homework-grid">
-        <div class="full-width-msg loading"><i class="fas fa-spinner fa-pulse"></i> 正在加载作业数据...</div>
+    <!-- 模态框 -->
+    <div id="answerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-lightbulb"></i> 作业答案</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div id="modalAnswerBody" class="answer-content">加载中...</div>
+            <div id="modalAttachments" class="attachments-list"></div>
+            <div id="modalLastUpdated" class="last-updated"></div>
+        </div>
     </div>
-    
-    <footer>📌 数据来源于 GitHub 仓库中的 homework.json 文件 | 自动刷新 | 支持暗色跟随系统 | 使用上方工具可快速生成作业JSON</footer>
-</div>
 
-<div id="copyToast" class="copy-toast">✅ 已复制到剪贴板</div>
+    <div id="copyToast" class="copy-toast">✅ 已复制到剪贴板</div>
 
-<script>
-    // ---------- 看板核心逻辑 ----------
-    // GitHub 原始数据访问地址 (请确保分支名为 main，且文件名为 homework.json)
-    const DATA_URL = `https://raw.githubusercontent.com/xiaojie256/netlify-deploy/main/homework.json`;
-
-    let currentHomeworkList = [];
-    let currentFilter = 'all';
-
-    const container = document.getElementById('homeworkContainer');
-    const warningContainer = document.getElementById('warningContainer');
-    const totalSpan = document.getElementById('totalCount');
-    const pendingSpan = document.getElementById('pendingCount');
-    const completedSpan = document.getElementById('completedCount');
-    const refreshBtn = document.getElementById('refreshBtn');
-
-    function updateStats(list) {
-        const total = list.length;
-        const pending = list.filter(item => item.status === '未完成').length;
-        const completed = list.filter(item => item.status === '已完成').length;
-        totalSpan.innerText = total;
-        pendingSpan.innerText = pending;
-        completedSpan.innerText = completed;
-    }
-
-    function getDeadlineMessage(endDate) {
-        if (!endDate || endDate === '暂定') return '⏳ 截止日期暂定';
-        const parts = endDate.split('.');
-        if (parts.length === 2) {
-            const now = new Date();
-            const year = now.getFullYear();
-            let targetDate = new Date(year, parseInt(parts[0])-1, parseInt(parts[1]));
-            if (targetDate < now) targetDate = new Date(year+1, parseInt(parts[0])-1, parseInt(parts[1]));
-            const diffDays = Math.ceil((targetDate - now) / (1000 * 60 * 60 * 24));
-            if (diffDays < 0) return `⚠️ 已过期 ${Math.abs(diffDays)} 天`;
-            if (diffDays === 0) return '🔥 今天截止';
-            return `📅 剩余 ${diffDays} 天`;
+    <script>
+        // 配置 marked
+        if (typeof marked !== 'undefined') {
+            marked.setOptions({ breaks: true, gfm: true });
         }
-        return `📅 截止 ${endDate}`;
-    }
 
-    function renderHomeworks() {
-        if (!currentHomeworkList.length) {
-            container.innerHTML = `<div class="full-width-msg error-message">
-                <i class="fas fa-folder-open" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
-                暂无作业数据，请检查数据源或点击同步
-            </div>`;
-            updateStats([]);
-            return;
+        // ---------- 全局变量 ----------
+        const DATA_URL = `https://raw.githubusercontent.com/xiaojie256/netlify-deploy/main/homework.json`;
+        const ANSWER_URL = `https://raw.githubusercontent.com/xiaojie256/netlify-deploy/main/Answer.json`;
+        let currentHomeworkList = [];      // 作业列表 (每个作业带 id)
+        let answersMap = {};               // id -> { answer, attachments, lastUpdated }
+        let currentFilter = 'all';
+
+        const container = document.getElementById('homeworkContainer');
+        const warningContainer = document.getElementById('warningContainer');
+        const totalSpan = document.getElementById('totalCount');
+        const pendingSpan = document.getElementById('pendingCount');
+        const completedSpan = document.getElementById('completedCount');
+        const refreshBtn = document.getElementById('refreshBtn');
+
+        // 辅助: 生成slug id (科目+作业名)
+        function generateId(subject, homeworkName) {
+            const slug = (str) => str.trim().toLowerCase().replace(/[^\w\u4e00-\u9fa5]+/g, '_').replace(/^_+|_+$/g, '');
+            return `${slug(subject)}_${slug(homeworkName)}`;
         }
-        let filteredList = currentHomeworkList;
-        if (currentFilter !== 'all') {
-            filteredList = currentHomeworkList.filter(item => item.status === currentFilter);
+
+        // 确保每个作业都有id
+        function ensureHomeworkIds(homeworks) {
+            return homeworks.map(hw => {
+                if (!hw.id) {
+                    hw.id = generateId(hw.subject, hw.homeworkName);
+                }
+                return hw;
+            });
         }
-        updateStats(currentHomeworkList);
-        if (filteredList.length === 0) {
-            container.innerHTML = `<div class="full-width-msg error-message" style="background: transparent; color: #64748b; border: 2px dashed #cbd5e1;">
-                <i class="fas fa-filter" style="font-size: 2rem;"></i>
-                没有找到符合“${currentFilter}”状态的作业～
-            </div>`;
-            return;
+
+        // 加载答案数据（无缓存回退）
+        async function fetchAnswers() {
+            try {
+                const res = await fetch(ANSWER_URL, { cache: 'no-store' });
+                if (res.ok) {
+                    const data = await res.json();
+                    answersMap = data || {};
+                } else {
+                    answersMap = {};
+                }
+            } catch (err) {
+                console.warn('无法加载答案文件', err);
+                answersMap = {};
+            }
         }
-        const cardsHtml = filteredList.map(hw => {
-            const statusClass = hw.status === '已完成' ? 'completed' : '';
-            const deadlineMsg = getDeadlineMessage(hw.endDate);
-            return `
+
+        function updateStats(list) {
+            const total = list.length;
+            const pending = list.filter(item => item.status === '未完成').length;
+            const completed = list.filter(item => item.status === '已完成').length;
+            totalSpan.innerText = total;
+            pendingSpan.innerText = pending;
+            completedSpan.innerText = completed;
+        }
+
+        function getDeadlineMessage(endDate) {
+            if (!endDate || endDate === '暂定') return '⏳ 截止日期暂定';
+            const parts = endDate.split('.');
+            if (parts.length === 2) {
+                const now = new Date();
+                const year = now.getFullYear();
+                let targetDate = new Date(year, parseInt(parts[0]) - 1, parseInt(parts[1]));
+                if (targetDate < now) targetDate = new Date(year + 1, parseInt(parts[0]) - 1, parseInt(parts[1]));
+                const diffDays = Math.ceil((targetDate - now) / (1000 * 60 * 60 * 24));
+                if (diffDays < 0) return `⚠️ 已过期 ${Math.abs(diffDays)} 天`;
+                if (diffDays === 0) return '🔥 今天截止';
+                return `📅 剩余 ${diffDays} 天`;
+            }
+            return `📅 截止 ${endDate}`;
+        }
+
+        // 显示答案模态框
+        function showAnswer(作业id) {
+            const answerData = answersMap[作业id];
+            const modal = document.getElementById('answerModal');
+            const bodyDiv = document.getElementById('modalAnswerBody');
+            const attachDiv = document.getElementById('modalAttachments');
+            const updateSpan = document.getElementById('modalLastUpdated');
+            if (!answerData) {
+                bodyDiv.innerHTML = '<p style="color: #ef4444;">❌ 暂无此作业的答案，请管理员补充 Answer.json。</p>';
+                attachDiv.innerHTML = '';
+                updateSpan.innerHTML = '';
+                modal.style.display = 'flex';
+                return;
+            }
+            // 渲染 Markdown
+            let answerHtml = answerData.answer || '无答案内容';
+            if (typeof marked !== 'undefined') {
+                answerHtml = marked.parse(answerHtml);
+            } else {
+                answerHtml = `<pre>${escapeHtml(answerHtml)}</pre>`;
+            }
+            bodyDiv.innerHTML = answerHtml;
+            // 附件
+            let attachmentsHtml = '';
+            if (answerData.attachments && answerData.attachments.length) {
+                attachmentsHtml = '<strong><i class="fas fa-paperclip"></i> 附件：</strong><br>';
+                answerData.attachments.forEach(url => {
+                    attachmentsHtml += `<a href="${escapeHtml(url)}" target="_blank"><i class="fas fa-external-link-alt"></i> ${escapeHtml(url)}</a><br>`;
+                });
+            } else {
+                attachmentsHtml = '<em>无附件</em>';
+            }
+            attachDiv.innerHTML = attachmentsHtml;
+            updateSpan.innerHTML = `📅 答案最后更新: ${answerData.lastUpdated || '未知'}`;
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('answerModal').style.display = 'none';
+        }
+
+        function renderHomeworks() {
+            if (!currentHomeworkList.length) {
+                container.innerHTML = `<div class="full-width-msg error-message"><i class="fas fa-folder-open" style="font-size: 2rem;"></i>暂无作业数据，请检查网络或仓库地址</div>`;
+                updateStats([]);
+                return;
+            }
+            let filteredList = currentHomeworkList;
+            if (currentFilter !== 'all') {
+                filteredList = currentHomeworkList.filter(item => item.status === currentFilter);
+            }
+            updateStats(currentHomeworkList);
+            if (filteredList.length === 0) {
+                container.innerHTML = `<div class="full-width-msg error-message" style="background: transparent;">没有找到符合“${currentFilter}”状态的作业～</div>`;
+                return;
+            }
+            const cardsHtml = filteredList.map(hw => {
+                const statusClass = hw.status === '已完成' ? 'completed' : '';
+                const deadlineMsg = getDeadlineMessage(hw.endDate);
+                const showAnswerBtn = (hw.status === '已完成') ? `<button class="answer-btn" data-id="${escapeHtml(hw.id)}"><i class="fas fa-eye"></i> 查看答案</button>` : '';
+                return `
                 <div class="homework-card">
                     <div class="card-header">
                         <span class="subject">${escapeHtml(hw.subject)}</span>
@@ -654,270 +944,200 @@
                         <div class="detail-item"><i class="fas fa-flag-checkered"></i> 结束：${escapeHtml(hw.endDate)}</div>
                         <div class="deadline"><i class="far fa-clock"></i> ${deadlineMsg}</div>
                     </div>
+                    ${showAnswerBtn}
                 </div>
             `;
-        }).join('');
-        container.innerHTML = cardsHtml;
-    }
-
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
-
-    async function fetchHomeworkData() {
-        container.innerHTML = `<div class="full-width-msg loading"><i class="fas fa-spinner fa-pulse" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i> 正在从 GitHub 拉取最新数据...</div>`;
-        warningContainer.innerHTML = ''; 
-        try {
-            const response = await fetch(DATA_URL, { cache: 'no-store' });
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            
-            const data = await response.json();
-
-            if (Array.isArray(data) && data.length > 0) {
-                const validated = data.filter(item => item.subject && item.status && item.homeworkName);
-                if (validated.length === 0) throw new Error('数据格式无效');
-                currentHomeworkList = validated;
-                renderHomeworks();
-                localStorage.setItem('cachedHomework', JSON.stringify(validated));
-            } else {
-                throw new Error('数据不是有效的作业数组');
-            }
-        } catch (err) {
-            console.warn('远程拉取失败，尝试使用缓存', err);
-            const cached = localStorage.getItem('cachedHomework');
-            if (cached) {
-                try {
-                    const parsed = JSON.parse(cached);
-                    if (Array.isArray(parsed) && parsed.length) {
-                        currentHomeworkList = parsed;
-                        renderHomeworks();
-                        warningContainer.innerHTML = `<div class="warning-message"><i class="fas fa-exclamation-triangle"></i> 网络异常，当前显示的是本地缓存数据。</div>`;
-                        return;
-                    }
-                } catch(e) {}
-            }
-            currentHomeworkList = [];
-            updateStats([]);
-            container.innerHTML = `<div class="full-width-msg error-message">
-                <i class="fas fa-wifi" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
-                无法连接远程数据源且无本地缓存数据。请检查 GitHub 仓库配置。
-            </div>`;
-        }
-    }
-
-    async function forceRefresh() { await fetchHomeworkData(); }
-    
-    function bindFilters() {
-        const btns = document.querySelectorAll('.filter-btn');
-        btns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const filterValue = btn.getAttribute('data-filter');
-                if (!filterValue) return;
-                btns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentFilter = filterValue;
-                renderHomeworks();
+            }).join('');
+            container.innerHTML = cardsHtml;
+            // 绑定答案按钮事件
+            document.querySelectorAll('.answer-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = btn.getAttribute('data-id');
+                    if (id) showAnswer(id);
+                });
             });
-        });
-    }
-
-    function detectDarkMode() {
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.body.classList.add('dark');
-        }
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-            if (e.matches) document.body.classList.add('dark');
-            else document.body.classList.remove('dark');
-        });
-    }
-
-    // ---------- 作业文本解析 & 转换器模块 ----------
-    let latestGeneratedJson = null;
-
-    function parseHomeworkFromText(text) {
-        const lines = text.split(/\r?\n/);
-        let subject = '';
-        let status = '未完成';
-        let homeworkName = '';
-        let platform = '';
-        let startDate = '';
-        let endDate = '';
-
-        function extractValue(line, keyword) {
-            const regex = new RegExp(`${keyword}[：:]\\s*(.+)`);
-            const match = line.match(regex);
-            return match ? match[1].trim() : null;
         }
 
-        for (let i = 0; i < lines.length; i++) {
-            let line = lines[i].trim();
-            if (line === '') continue;
-
-            if (!subject && !line.includes('作业：') && !line.includes('平台：') && !line.includes('开始日期：') && !line.includes('结束日期：') && !line.includes('状态：') && !line.includes('#')) {
-                subject = line;
-                continue;
-            }
-
-            const statusVal = extractValue(line, '状态');
-            if (statusVal && (statusVal === '未完成' || statusVal === '已完成')) {
-                status = statusVal;
-                continue;
-            }
-            
-            if (line.includes('#') && (line.includes('未完成') || line.includes('已完成'))) {
-                if (line.includes('未完成')) status = '未完成';
-                if (line.includes('已完成')) status = '已完成';
-                continue;
-            }
-            
-            if ((line.includes('未完成') || line.includes('已完成')) && !line.includes('作业：') && !line.includes('平台：')) {
-                if (line.includes('未完成')) status = '未完成';
-                if (line.includes('已完成')) status = '已完成';
-                continue;
-            }
-
-            let hw = extractValue(line, '作业');
-            if (hw) { homeworkName = hw; continue; }
-
-            let plat = extractValue(line, '平台');
-            if (plat) { platform = plat; continue; }
-
-            let sDate = extractValue(line, '开始日期');
-            if (sDate) { startDate = sDate; continue; }
-            let sDate2 = extractValue(line, '开始时间');
-            if (sDate2) { startDate = sDate2; continue; }
-
-            let eDate = extractValue(line, '结束日期');
-            if (eDate) { endDate = eDate; continue; }
-            let eDate2 = extractValue(line, '截止日期');
-            if (eDate2) { endDate = eDate2; continue; }
-            let eDate3 = extractValue(line, '结束时间');
-            if (eDate3) { endDate = eDate3; continue; }
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function (m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
         }
 
-        if (!subject && lines.length > 0) {
+        // 从仓库加载作业数据（不使用任何本地缓存/假数据）
+        async function fetchHomeworkData() {
+            container.innerHTML = `<div class="full-width-msg loading"><i class="fas fa-spinner fa-pulse"></i> 正在拉取最新数据...</div>`;
+            warningContainer.innerHTML = '';
+            try {
+                const [homeRes, ansRes] = await Promise.all([
+                    fetch(DATA_URL, { cache: 'no-store' }),
+                    fetch(ANSWER_URL, { cache: 'no-store' }).catch(() => ({ ok: false }))
+                ]);
+                if (!homeRes.ok) throw new Error(`HTTP ${homeRes.status}`);
+                const data = await homeRes.json();
+                if (Array.isArray(data) && data.length) {
+                    let validated = data.filter(item => item.subject && item.status && item.homeworkName);
+                    if (validated.length === 0) throw new Error('作业数据为空或不完整');
+                    validated = ensureHomeworkIds(validated);
+                    currentHomeworkList = validated;
+                } else throw new Error('无效数据格式');
+                if (ansRes.ok) answersMap = await ansRes.json();
+                else answersMap = {};
+                renderHomeworks();
+            } catch (err) {
+                console.error(err);
+                currentHomeworkList = [];
+                renderHomeworks();
+                container.innerHTML = `<div class="full-width-msg error-message"><i class="fas fa-exclamation-triangle"></i> 无法加载作业数据，请检查仓库或网络连接。</div>`;
+                warningContainer.innerHTML = `<div class="warning-message"><i class="fas fa-exclamation-triangle"></i> 数据加载失败: ${err.message}</div>`;
+            }
+        }
+
+        async function forceRefresh() { await fetchHomeworkData(); }
+
+        function bindFilters() {
+            const btns = document.querySelectorAll('.filter-btn');
+            btns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const filterValue = btn.getAttribute('data-filter');
+                    btns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentFilter = filterValue;
+                    renderHomeworks();
+                });
+            });
+        }
+
+        function detectDarkMode() {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) document.body.classList.add('dark');
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => e.matches ? document.body.classList.add('dark') : document.body.classList.remove('dark'));
+        }
+
+        // ---------- 转换器 (无示例填充) ----------
+        let latestGeneratedJson = null;
+        function parseHomeworkFromText(text) {
+            const lines = text.split(/\r?\n/);
+            let subject = '', status = '未完成', homeworkName = '', platform = '', startDate = '', endDate = '';
+            function extractValue(line, keyword) {
+                const regex = new RegExp(`${keyword}[：:]\\s*(.+)`);
+                const match = line.match(regex);
+                return match ? match[1].trim() : null;
+            }
             for (let line of lines) {
-                let tl = line.trim();
-                if (tl && !tl.includes('作业：') && !tl.includes('平台：') && !tl.includes('开始日期：') && !tl.includes('结束日期：') && !tl.includes('状态：') && !tl.includes('#')) {
-                    subject = tl;
-                    break;
+                line = line.trim();
+                if (!line) continue;
+                if (!subject && !line.includes('作业：') && !line.includes('平台：') && !line.includes('开始日期：') && !line.includes('结束日期：') && !line.includes('状态：') && !line.includes('#')) {
+                    subject = line;
+                    continue;
                 }
+                const statusVal = extractValue(line, '状态');
+                if (statusVal && (statusVal === '未完成' || statusVal === '已完成')) { status = statusVal; continue; }
+                if (line.includes('#') && (line.includes('未完成') || line.includes('已完成'))) {
+                    if (line.includes('未完成')) status = '未完成';
+                    if (line.includes('已完成')) status = '已完成';
+                    continue;
+                }
+                if ((line.includes('未完成') || line.includes('已完成')) && !line.includes('作业：') && !line.includes('平台：')) {
+                    if (line.includes('未完成')) status = '未完成';
+                    if (line.includes('已完成')) status = '已完成';
+                    continue;
+                }
+                let hw = extractValue(line, '作业'); if (hw) { homeworkName = hw; continue; }
+                let plat = extractValue(line, '平台'); if (plat) { platform = plat; continue; }
+                let sDate = extractValue(line, '开始日期'); if (sDate) { startDate = sDate; continue; }
+                let eDate = extractValue(line, '结束日期'); if (eDate) { endDate = eDate; continue; }
+                let eDate2 = extractValue(line, '截止日期'); if (eDate2) { endDate = eDate2; continue; }
+            }
+            if (!subject) throw new Error('❌ 未识别科目');
+            if (!homeworkName) throw new Error('❌ 未找到作业名称');
+            if (!platform) platform = '未指定平台';
+            if (!startDate) startDate = '未填写';
+            if (!endDate) endDate = '暂定';
+            const id = generateId(subject, homeworkName);
+            return { id, subject, status, homeworkName, platform, startDate, endDate };
+        }
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('copyToast');
+            toast.textContent = isError ? `⚠️ ${msg}` : `✅ ${msg}`;
+            toast.style.background = isError ? '#b91c1c' : '#1e293b';
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+        function updateJsonPreview(obj) {
+            const pre = document.getElementById('jsonPreview');
+            if (obj && typeof obj === 'object') {
+                latestGeneratedJson = JSON.stringify(obj, null, 2);
+                pre.textContent = latestGeneratedJson;
+                pre.style.color = '#059669';
+            } else {
+                latestGeneratedJson = null;
+                pre.textContent = '解析失败';
+                pre.style.color = '#ef4444';
             }
         }
-        
-        if (!subject) throw new Error('❌ 未能识别科目，请确保第一行为科目名称（如：嵌入式系统）');
-        if (!homeworkName) throw new Error('❌ 未找到作业名称，请使用“作业：xxx”格式');
-        if (!platform) platform = '未指定平台';
-        if (!startDate) startDate = '未填写';
-        if (!endDate) endDate = '暂定';
-
-        return {
-            subject: subject,
-            status: status,
-            homeworkName: homeworkName,
-            platform: platform,
-            startDate: startDate,
-            endDate: endDate
-        };
-    }
-
-    function showToast(message, isError = false) {
-        const toast = document.getElementById('copyToast');
-        if (!toast) return;
-        toast.textContent = isError ? `⚠️ ${message}` : `✅ ${message}`;
-        toast.style.background = isError ? '#b91c1c' : '#1e293b';
-        toast.classList.add('show');
-        
-        setTimeout(() => {
-            toast.classList.remove('show');
-            setTimeout(() => {
-                toast.textContent = '✅ 已复制到剪贴板';
-                toast.style.background = '#1e293b';
-            }, 300);
-        }, 2000);
-    }
-
-    function updateJsonPreview(obj) {
-        const previewEl = document.getElementById('jsonPreview');
-        if (!previewEl) return;
-        if (obj && typeof obj === 'object') {
-            latestGeneratedJson = JSON.stringify(obj, null, 2);
-            previewEl.textContent = latestGeneratedJson;
-            previewEl.style.color = document.body.classList.contains('dark') ? '#a7f3d0' : '#059669';
-        } else {
-            latestGeneratedJson = null;
-            previewEl.textContent = '⚠️ 解析失败，请检查输入格式';
-            previewEl.style.color = '#ef4444';
+        function handleConvert() {
+            const raw = document.getElementById('inputHomeworkText').value;
+            if (!raw.trim()) { showToast('请输入内容', true); return; }
+            try {
+                const parsed = parseHomeworkFromText(raw);
+                updateJsonPreview(parsed);
+                showToast('转换成功');
+            } catch (err) { showToast(err.message, true); updateJsonPreview(null); }
         }
-    }
-
-    function handleConvert() {
-        const textarea = document.getElementById('inputHomeworkText');
-        const rawText = textarea.value;
-        if (!rawText.trim()) {
-            document.getElementById('jsonPreview').textContent = '⛔ 请输入作业文本内容后再点击转换';
-            document.getElementById('jsonPreview').style.color = '#ef4444';
-            showToast('请输入内容', true);
-            return;
+        function handleCopyJson() {
+            if (!latestGeneratedJson) { showToast('无JSON可复制', true); return; }
+            navigator.clipboard.writeText(latestGeneratedJson).then(() => showToast('已复制')).catch(() => showToast('复制失败', true));
         }
-        try {
-            const parsed = parseHomeworkFromText(rawText);
-            updateJsonPreview(parsed);
-            showToast('转换成功');
-        } catch (err) {
-            console.error(err);
-            document.getElementById('jsonPreview').textContent = `❌ 解析错误: ${err.message}`;
-            document.getElementById('jsonPreview').style.color = '#ef4444';
-            latestGeneratedJson = null;
-            showToast(err.message, true);
+
+        // ---------- 答案生成助手 (无示例填充) ----------
+        let latestAnswerJson = null;
+        function generateAnswerSegment() {
+            const jobId = document.getElementById('answerJobId').value.trim();
+            const answerText = document.getElementById('answerContent').value.trim();
+            if (!jobId) { showToast('请填写作业ID', true); return; }
+            const today = new Date().toISOString().slice(0, 10);
+            const answerObj = {
+                answer: answerText || '(空答案)',
+                attachments: [],
+                lastUpdated: today
+            };
+            const fullObj = { [jobId]: answerObj };
+            latestAnswerJson = JSON.stringify(fullObj, null, 2);
+            const preview = document.getElementById('answerJsonPreview');
+            preview.textContent = latestAnswerJson;
+            preview.style.color = '#10b981';
+            showToast('答案JSON已生成');
         }
-    }
-
-    function handleCopyJson() {
-        if (!latestGeneratedJson) {
-            showToast('没有可复制的JSON，请先输入并转换', true);
-            return;
+        function copyAnswerJson() {
+            if (!latestAnswerJson) { showToast('请先生成答案JSON', true); return; }
+            navigator.clipboard.writeText(latestAnswerJson).then(() => showToast('答案JSON已复制')).catch(() => showToast('复制失败', true));
         }
-        navigator.clipboard.writeText(latestGeneratedJson).then(() => {
-            showToast('JSON 已成功复制到剪贴板');
-        }).catch(() => {
-            showToast('复制失败，请手动选择复制', true);
-        });
-    }
 
-    function fillExample() {
-        const exampleText = `嵌入式系统\n#作业/作业详情/未完成\n作业：控制海龟移动\n平台：学习通\n开始日期：3.13\n结束日期：暂定`;
-        const textarea = document.getElementById('inputHomeworkText');
-        if (textarea) {
-            textarea.value = exampleText;
-            showToast('已填入示例格式，请点击转换');
+        function initConverterAndHelper() {
+            document.getElementById('convertBtn').addEventListener('click', handleConvert);
+            document.getElementById('copyJsonBtn').addEventListener('click', handleCopyJson);
+            document.getElementById('generateAnswerBtn').addEventListener('click', generateAnswerSegment);
+            document.getElementById('copyAnswerJsonBtn').addEventListener('click', copyAnswerJson);
         }
-    }
 
-    function initConverter() {
-        const convertBtn = document.getElementById('convertBtn');
-        const copyBtn = document.getElementById('copyJsonBtn');
-        const exampleBtn = document.getElementById('exampleBtn');
-        if (convertBtn) convertBtn.addEventListener('click', handleConvert);
-        if (copyBtn) copyBtn.addEventListener('click', handleCopyJson);
-        if (exampleBtn) exampleBtn.addEventListener('click', fillExample);
-    }
-
-    async function init() {
-        detectDarkMode();
-        bindFilters();
-        if (refreshBtn) refreshBtn.addEventListener('click', forceRefresh);
-        await fetchHomeworkData();
-        initConverter();
-    }
-
-    init();
-</script>
+        async function init() {
+            detectDarkMode();
+            bindFilters();
+            refreshBtn.addEventListener('click', forceRefresh);
+            await fetchHomeworkData();
+            initConverterAndHelper();
+            // 模态框关闭
+            const modal = document.getElementById('answerModal');
+            const closeBtn = document.querySelector('.close-modal');
+            closeBtn.addEventListener('click', closeModal);
+            window.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+        }
+        init();
+    </script>
 </body>
+
 </html>

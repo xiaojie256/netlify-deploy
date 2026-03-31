@@ -1,13 +1,15 @@
 [
   {
+    "id": "linux_4_10习题",
     "subject": "Linux",
-    "status": "完成",
+    "status": "已完成",
     "homeworkName": "4.10习题",
     "platform": "雨课堂",
     "startDate": "3.30",
     "endDate": "4.18"
   },
   {
+    "id": "编译原理_作业5_正规式与有限自动机理论",
     "subject": "编译原理",
     "status": "未完成",
     "homeworkName": "作业5-正规式与有限自动机理论",
@@ -16,6 +18,7 @@
     "endDate": "4.3"
   },
   {
+    "id": "嵌入式系统_控制海龟移动",
     "subject": "嵌入式系统",
     "status": "未完成",
     "homeworkName": "控制海龟移动",
@@ -24,26 +27,30 @@
     "endDate": "暂定"
   },
   {
-  "subject": "Linux",
-  "status": "未完成",
-  "homeworkName": "实验报告-实验4",
-  "platform": "雨课堂",
-  "startDate": "3.30",
-  "endDate": "4.18"
-},{
-  "subject": "软件工程",
-  "status": "未完成",
-  "homeworkName": "作业4-经济可行性分析",
-  "platform": "学习通",
-  "startDate": "3.29",
-  "endDate": "4.5"
-},
-{
-  "subject": "软件工程",
-  "status": "未完成",
-  "homeworkName": "作业3-可行性研究",
-  "platform": "学习通",
-  "startDate": "3.29",
-  "endDate": "4.2"
-}
+    "id": "linux_实验报告_实验4",
+    "subject": "Linux",
+    "status": "未完成",
+    "homeworkName": "实验报告-实验4",
+    "platform": "雨课堂",
+    "startDate": "3.30",
+    "endDate": "4.18"
+  },
+  {
+    "id": "软件工程_作业4_经济可行性分析",
+    "subject": "软件工程",
+    "status": "未完成",
+    "homeworkName": "作业4-经济可行性分析",
+    "platform": "学习通",
+    "startDate": "3.29",
+    "endDate": "4.5"
+  },
+  {
+    "id": "软件工程_作业3_可行性研究",
+    "subject": "软件工程",
+    "status": "未完成",
+    "homeworkName": "作业3-可行性研究",
+    "platform": "学习通",
+    "startDate": "3.29",
+    "endDate": "4.2"
+  }
 ]
