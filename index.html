@@ -1140,8 +1140,8 @@
                 attachments: [],
                 lastUpdated: today
             };
-            // 修改：直接序列化 answerObj，而非 { [finalJobId]: answerObj }
-            latestAnswerJson = JSON.stringify(answerObj, null, 2);
+            // 修改：直接 stringify answerObj 而不是包装对象
+            latestAnswerJson = `"${finalJobId}": ${JSON.stringify(answerObj, null, 2)}`;
             const preview = document.getElementById('answerJsonPreview');
             preview.textContent = latestAnswerJson;
             preview.style.color = '#10b981';
