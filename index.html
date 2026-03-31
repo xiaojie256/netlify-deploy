@@ -702,10 +702,6 @@
             <p>数据源 GitHub | 支持作业答案查看 | 智能生成工具</p>
         </div>
 
-        <div class="warning-message" style="margin-top: -1rem; margin-bottom: 1.5rem;">
-            ⚠️ <strong>注意</strong>：本页面使用访问令牌提高 Gitee API 调用限额，仅用于内部测试。
-        </div>
-
         <div class="controls">
             <div class="filter-group" id="filterGroup">
                 <button class="filter-btn active" data-filter="all">全部</button>
@@ -919,6 +915,26 @@
             } else {
                 answerHtml = `<pre>${escapeHtml(answerHtml)}</pre>`;
             }
+
+            // 新增：处理纯图片URL的情况
+            // 如果整个答案内容是一个图片URL，则直接显示为图片
+            const imgUrlPattern = /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|bmp|webp|svg))$/i;
+            if (imgUrlPattern.test(answerData.answer.trim())) {
+                answerHtml = `<img src="${escapeHtml(answerData.answer.trim())}" alt="答案图片" style="max-width: 100%; border-radius: 0.75rem;">`;
+            } else {
+                // 否则，处理答案内容中的独立图片URL行
+                const lines = answerHtml.split('\n');
+                const processedLines = lines.map(line => {
+                    // 检查是否整行是一个图片URL（去除HTML标签后）
+                    const cleanLine = line.replace(/<[^>]*>/g, '').trim();
+                    if (imgUrlPattern.test(cleanLine)) {
+                        return `<img src="${escapeHtml(cleanLine)}" alt="答案图片" style="max-width: 100%; border-radius: 0.75rem;">`;
+                    }
+                    return line;
+                });
+                answerHtml = processedLines.join('\n');
+            }
+
             bodyDiv.innerHTML = answerHtml;
             // 附件
             let attachmentsHtml = '';
