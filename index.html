@@ -702,6 +702,10 @@
             <p>数据源 GitHub | 支持作业答案查看 | 智能生成工具</p>
         </div>
 
+        <div class="warning-message" style="margin-top: -1rem; margin-bottom: 1.5rem;">
+            ⚠️ <strong>注意</strong>：本页面使用访问令牌提高 Gitee API 调用限额，仅用于内部测试。
+        </div>
+
         <div class="controls">
             <div class="filter-group" id="filterGroup">
                 <button class="filter-btn active" data-filter="all">全部</button>
@@ -804,10 +808,12 @@
         const OWNER = "pepsi-666";
         const REPO = "xiao-jie";
         const BRANCH = "master";
+        // ⚠️ 安全提示：此令牌仅用于测试，请勿提交到公开仓库
+        const ACCESS_TOKEN = "bd242d8035c89a2ec757b5a5cd322faf";
 
         // 使用 Gitee API 直接获取文件，无需代理
-        const DATA_URL = `https://gitee.com/api/v5/repos/${OWNER}/${REPO}/contents/homework.json?ref=${BRANCH}`;
-        const ANSWER_URL = `https://gitee.com/api/v5/repos/${OWNER}/${REPO}/contents/Answer.json?ref=${BRANCH}`;
+        const DATA_URL = `https://gitee.com/api/v5/repos/${OWNER}/${REPO}/contents/homework.json?ref=${BRANCH}&access_token=${ACCESS_TOKEN}`;
+        const ANSWER_URL = `https://gitee.com/api/v5/repos/${OWNER}/${REPO}/contents/Answer.json?ref=${BRANCH}&access_token=${ACCESS_TOKEN}`;
         let currentHomeworkList = [];      // 作业列表 (每个作业带 id)
         let answersMap = {};               // id -> { answer, attachments, lastUpdated }
         let currentFilter = 'all';

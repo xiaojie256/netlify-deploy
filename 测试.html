@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>Gitee 文件读取测试 (API方式)</title>
+    <title>Gitee 文件读取测试 (带令牌)</title>
     <style>
         body { font-family: monospace; margin: 20px; background: #fff; }
         .container { max-width: 1000px; margin: 0 auto; }
@@ -11,11 +11,16 @@
         .error { color: #d33; background: #ffe0e0; padding: 8px; border-left: 4px solid #d33; }
         button { margin-top: 10px; padding: 6px 12px; background: #eee; border: 1px solid #aaa; cursor: pointer; }
         button:hover { background: #ddd; }
+        .warning { background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>📡 通过 Gitee API 读取文件 (无跨域问题)</h1>
+    <h1>📡 通过 Gitee API 读取文件 (带令牌)</h1>
+    <div class="warning">
+        ⚠️ <strong>安全警告</strong>：当前代码中的令牌为明文显示，仅供本地测试或内部使用。<br>
+        若将此页面部署到公网，任何访问者均可通过浏览器开发者工具获取令牌，请务必改用后端代理方式。
+    </div>
     <p>仓库：<code>feng-xiaojie256/HomeWorkDate</code> 分支：<code>main</code></p>
     <p><button id="refreshBtn">🔄 重新获取</button></p>
 
@@ -27,27 +32,31 @@
     <hr>
     <details>
         <summary>📌 说明</summary>
-        <p>使用 Gitee API v5 获取文件内容：<br>
-        <code>https://gitee.com/api/v5/repos/owner/repo/contents/文件路径</code><br>
-        公开仓库无需 token，返回的 content 字段是 base64 编码，解码后即为原始内容。<br>
-        此方法无跨域限制，可直接在本地 HTML 中运行。
+        <p>使用 Gitee API v5 获取文件内容，并通过 <code>access_token</code> 提高调用限额。<br>
+        公开仓库匿名请求限流严格，加上令牌后配额大幅提升，可有效避免 403/429 错误。<br>
+        返回的 content 字段是 base64 编码，解码后即为原始内容。
         </p>
     </details>
 </div>
 
 <script>
+    // ===================== 配置区 =====================
     const OWNER = "feng-xiaojie256";
     const REPO = "HomeWorkDate";
-    const BRANCH = "main";   // API 中通过 ref 参数指定分支
+    const BRANCH = "main";
+    // ⚠️ 安全提示：此令牌仅用于测试，请勿提交到公开仓库
+    const ACCESS_TOKEN = "bd242d8035c89a2ec757b5a5cd322faf";
+    // =================================================
 
     const files = [
         { name: "Answer.json", path: "Answer.json", containerId: "answerArea" },
         { name: "homework.json", path: "homework.json", containerId: "homeworkArea" }
     ];
 
-    // 通过 Gitee API 获取文件内容
+    // 通过 Gitee API 获取文件内容（带令牌）
     async function fetchFileViaAPI(filePath) {
-        const url = `https://gitee.com/api/v5/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(filePath)}?ref=${BRANCH}`;
+        // 将 access_token 附加到查询参数
+        const url = `https://gitee.com/api/v5/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(filePath)}?ref=${BRANCH}&access_token=${ACCESS_TOKEN}`;
         const resp = await fetch(url);
         if (!resp.ok) {
             const errText = await resp.text();
