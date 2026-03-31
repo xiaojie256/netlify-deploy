@@ -920,7 +920,7 @@
             // 如果整个答案内容是一个图片URL，则直接显示为图片
             const imgUrlPattern = /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|bmp|webp|svg))$/i;
             if (imgUrlPattern.test(answerData.answer.trim())) {
-                answerHtml = `<img src="${escapeHtml(answerData.answer.trim())}" alt="答案图片" style="max-width: 100%; border-radius: 0.75rem;">`;
+                answerHtml = `<img src="${escapeHtml(answerData.answer.trim())}" alt="答案图片" style="max-width: 100%; border-radius: 0.75rem;" referrerpolicy="no-referrer">`;
             } else {
                 // 否则，处理答案内容中的独立图片URL行
                 const lines = answerHtml.split('\n');
@@ -928,7 +928,7 @@
                     // 检查是否整行是一个图片URL（去除HTML标签后）
                     const cleanLine = line.replace(/<[^>]*>/g, '').trim();
                     if (imgUrlPattern.test(cleanLine)) {
-                        return `<img src="${escapeHtml(cleanLine)}" alt="答案图片" style="max-width: 100%; border-radius: 0.75rem;">`;
+                        return `<img src="${escapeHtml(cleanLine)}" alt="答案图片" style="max-width: 100%; border-radius: 0.75rem;" referrerpolicy="no-referrer">`;
                     }
                     return line;
                 });
