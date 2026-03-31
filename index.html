@@ -859,6 +859,32 @@
             }
         }
 
+        // 新增：获取仓库内图片的 Base64（通过 API）
+        async function fetchImageBase64FromAPI(imagePath) {
+            const url = `https://gitee.com/api/v5/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(imagePath)}?ref=${BRANCH}&access_token=${ACCESS_TOKEN}`;
+            try {
+                const resp = await fetch(url);
+                if (!resp.ok) throw new Error(`API 请求失败: ${resp.status}`);
+                const data = await resp.json();
+                if (data.content) {
+                    return data.content;  // 已经是 base64 字符串
+                } else {
+                    throw new Error('无 content 字段');
+                }
+            } catch (err) {
+                console.warn('获取图片 Base64 失败', err);
+                return null;
+            }
+        }
+
+        // 新增：从 Gitee 原始图片 URL 中提取仓库内文件路径
+        function extractPathFromGiteeUrl(url) {
+            // 匹配 /raw/branch_name/ 后面的部分
+            const pattern = /\/raw\/[^/]+\/(.*)/;
+            const match = url.match(pattern);
+            return match ? match[1] : null;
+        }
+
         // 加载答案数据
         async function fetchAnswers() {
             try {
@@ -894,24 +920,6 @@
             return `📅 截止 ${endDate}`;
         }
 
-        // 新增：将图片URL转换为Data URL
-        async function fetchImageAsDataUrl(url) {
-            try {
-                const resp = await fetch(url);
-                if (!resp.ok) throw new Error(`Failed to fetch image: ${resp.statusText}`);
-                const blob = await resp.blob();
-                return new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result);
-                    reader.onerror = reject;
-                    reader.readAsDataURL(blob);
-                });
-            } catch (err) {
-                console.warn('Failed to convert image to data URL:', err);
-                return url; // fallback to original URL
-            }
-        }
-
         // 显示答案模态框
         async function showAnswer(作业id) {
             const answerData = answersMap[作业id];
@@ -938,8 +946,20 @@
             // 如果整个答案内容是一个图片URL，则直接显示为图片
             const imgUrlPattern = /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|bmp|webp|svg))$/i;
             if (imgUrlPattern.test(answerData.answer.trim())) {
-                const dataUrl = await fetchImageAsDataUrl(answerData.answer.trim());
-                answerHtml = `<img src="${escapeHtml(dataUrl)}" alt="答案图片" style="max-width: 100%; border-radius: 0.75rem;">`;
+                let finalSrc = answerData.answer.trim();
+                // 如果是 Gitee 原始图片链接，尝试通过 API 获取 Base64
+                if (finalSrc.includes('gitee.com') && finalSrc.includes('/raw/')) {
+                    const path = extractPathFromGiteeUrl(finalSrc);
+                    if (path) {
+                        const base64 = await fetchImageBase64FromAPI(path);
+                        if (base64) {
+                            const ext = finalSrc.split('.').pop().split('?')[0];
+                            const mime = ext === 'jpg' ? 'jpeg' : ext;
+                            finalSrc = `data:image/${mime};base64,${base64}`;
+                        }
+                    }
+                }
+                answerHtml = `<img src="${escapeHtml(finalSrc)}" alt="答案图片" style="max-width: 100%; border-radius: 0.75rem;">`;
             } else {
                 // 否则，处理答案内容中的独立图片URL行
                 const lines = answerHtml.split('\n');
@@ -948,8 +968,19 @@
                     // 检查是否整行是一个图片URL（去除HTML标签后）
                     const cleanLine = line.replace(/<[^>]*>/g, '').trim();
                     if (imgUrlPattern.test(cleanLine)) {
-                        const dataUrl = await fetchImageAsDataUrl(cleanLine);
-                        processedLines.push(`<img src="${escapeHtml(dataUrl)}" alt="答案图片" style="max-width: 100%; border-radius: 0.75rem;">`);
+                        let finalSrc = cleanLine;
+                        if (finalSrc.includes('gitee.com') && finalSrc.includes('/raw/')) {
+                            const path = extractPathFromGiteeUrl(finalSrc);
+                            if (path) {
+                                const base64 = await fetchImageBase64FromAPI(path);
+                                if (base64) {
+                                    const ext = finalSrc.split('.').pop().split('?')[0];
+                                    const mime = ext === 'jpg' ? 'jpeg' : ext;
+                                    finalSrc = `data:image/${mime};base64,${base64}`;
+                                }
+                            }
+                        }
+                        processedLines.push(`<img src="${escapeHtml(finalSrc)}" alt="答案图片" style="max-width: 100%; border-radius: 0.75rem;">`);
                     } else {
                         processedLines.push(line);
                     }
@@ -958,12 +989,31 @@
             }
 
             bodyDiv.innerHTML = answerHtml;
+
+            // 新增：处理 Markdown 渲染后的 img 标签
+            const imgs = bodyDiv.querySelectorAll('img');
+            for (const img of imgs) {
+                let src = img.getAttribute('src');
+                if (src && src.includes('gitee.com') && src.includes('/raw/')) {
+                    const path = extractPathFromGiteeUrl(src);
+                    if (path) {
+                        const base64 = await fetchImageBase64FromAPI(path);
+                        if (base64) {
+                            const ext = src.split('.').pop().split('?')[0];
+                            const mime = ext === 'jpg' ? 'jpeg' : ext;
+                            img.src = `data:image/${mime};base64,${base64}`;
+                        }
+                    }
+                }
+            }
+
             // 附件
             let attachmentsHtml = '';
             if (answerData.attachments && answerData.attachments.length) {
                 attachmentsHtml = '<strong><i class="fas fa-paperclip"></i> 附件：</strong><br>';
                 for (const url of answerData.attachments) {
-                    attachmentsHtml += `<a href="${escapeHtml(url)}" target="_blank"><i class="fas fa-external-link-alt"></i> ${escapeHtml(url)}</a><br>`;
+                    // 修改：为附件链接添加 rel="noreferrer"
+                    attachmentsHtml += `<a href="${escapeHtml(url)}" target="_blank" rel="noreferrer"><i class="fas fa-external-link-alt"></i> ${escapeHtml(url)}</a><br>`;
                 }
             } else {
                 attachmentsHtml = '<em>无附件</em>';
