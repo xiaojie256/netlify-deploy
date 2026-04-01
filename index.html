@@ -801,10 +801,15 @@
         }
 
         // ---------- 全局变量 ----------
-        // 🔁 修改这里：替换为你的 Worker 地址和自定义 Token
-        const WORKER_BASE = "https://xiaojie-functional.639237745.workers.dev";   // 替换为实际 Worker 地址
-        const API_TOKEN = "my-functional123";                      // 替换为与 Worker 环境变量一致的 Token
+        const OWNER = "pepsi-666";
+        const REPO = "xiao-jie";
+        const BRANCH = "master";
+        // ⚠️ 安全提示：此令牌仅用于测试，请勿提交到公开仓库
+        const ACCESS_TOKEN = "bd242d8035c89a2ec757b5a5cd322faf";
 
+        // 使用 Gitee API 直接获取文件，无需代理
+        const DATA_URL = `https://gitee.com/api/v5/repos/${OWNER}/${REPO}/contents/homework.json?ref=${BRANCH}&access_token=${ACCESS_TOKEN}`;
+        const ANSWER_URL = `https://gitee.com/api/v5/repos/${OWNER}/${REPO}/contents/Answer.json?ref=${BRANCH}&access_token=${ACCESS_TOKEN}`;
         let currentHomeworkList = [];      // 作业列表 (每个作业带 id)
         let answersMap = {};               // id -> { answer, attachments, lastUpdated }
         let currentFilter = 'all';
@@ -832,32 +837,58 @@
             });
         }
 
-        // 通过 Worker 获取文件内容 (JSON)
-        async function fetchJsonViaWorker(fileName) {
-            const url = `${WORKER_BASE}/${fileName}?token=${API_TOKEN}`;
+        // 通过 Gitee API 获取文件内容并解码
+        async function fetchFileViaAPI(url) {
             const resp = await fetch(url);
             if (!resp.ok) {
                 const errText = await resp.text();
-                throw new Error(`Worker 请求失败 (${resp.status}): ${errText.slice(0, 100)}`);
+                throw new Error(`API 请求失败 (${resp.status}): ${errText.slice(0, 100)}`);
             }
-            return await resp.json();
+            const data = await resp.json();
+            if (data.content) {
+                // API 返回的 content 是 base64 编码的字符串，需要正确解码 UTF-8
+                const binaryString = atob(data.content);
+                const bytes = new Uint8Array(binaryString.length);
+                for (let i = 0; i < binaryString.length; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                const decoded = new TextDecoder('utf-8').decode(bytes);
+                return JSON.parse(decoded);
+            } else {
+                throw new Error("API 返回数据中没有 content 字段");
+            }
         }
 
-        // 获取图片（通过 Worker），返回 Blob URL 或直接使用代理 URL
-        function getImageProxyUrl(imagePath) {
-            // 如果传入的是完整 Gitee raw 链接，提取路径
-            let path = imagePath;
-            if (imagePath.includes('gitee.com') && imagePath.includes('/raw/')) {
-                const match = imagePath.match(/\/raw\/[^/]+\/(.*)/);
-                if (match) path = match[1];
+        // 新增：获取仓库内图片的 Base64（通过 API）
+        async function fetchImageBase64FromAPI(imagePath) {
+            const url = `https://gitee.com/api/v5/repos/${OWNER}/${REPO}/contents/${encodeURIComponent(imagePath)}?ref=${BRANCH}&access_token=${ACCESS_TOKEN}`;
+            try {
+                const resp = await fetch(url);
+                if (!resp.ok) throw new Error(`API 请求失败: ${resp.status}`);
+                const data = await resp.json();
+                if (data.content) {
+                    return data.content;  // 已经是 base64 字符串
+                } else {
+                    throw new Error('无 content 字段');
+                }
+            } catch (err) {
+                console.warn('获取图片 Base64 失败', err);
+                return null;
             }
-            return `${WORKER_BASE}/images/${encodeURIComponent(path)}?token=${API_TOKEN}`;
+        }
+
+        // 新增：从 Gitee 原始图片 URL 中提取仓库内文件路径
+        function extractPathFromGiteeUrl(url) {
+            // 匹配 /raw/branch_name/ 后面的部分
+            const pattern = /\/raw\/[^/]+\/(.*)/;
+            const match = url.match(pattern);
+            return match ? match[1] : null;
         }
 
         // 加载答案数据
         async function fetchAnswers() {
             try {
-                answersMap = await fetchJsonViaWorker('answer.json');
+                answersMap = await fetchFileViaAPI(ANSWER_URL);
             } catch (err) {
                 console.warn('无法加载答案文件', err);
                 answersMap = {};
@@ -905,42 +936,86 @@
             }
             // 渲染 Markdown
             let answerHtml = answerData.answer || '无答案内容';
+            // 修改：即使答案是"(空答案)"，也要继续处理attachments
             if (answerData.answer === "(空答案)") {
-                answerHtml = ""; // 不显示占位文本
+                answerHtml = ""; // 设置为空字符串，不显示"(空答案)"文本
             } else if (typeof marked !== 'undefined') {
                 answerHtml = marked.parse(answerHtml);
             } else {
                 answerHtml = `<pre>${escapeHtml(answerHtml)}</pre>`;
             }
 
-            // 替换答案中的图片 URL 为 Worker 代理
-            // 1. 处理 Markdown 图片语法中的相对路径 images/xxx.png
-            answerHtml = answerHtml.replace(/!\[.*?\]\((images\/[^)]+)\)/g, (match, relativePath) => {
-                const proxyUrl = getImageProxyUrl(relativePath);
-                return `![图片](${proxyUrl})`;
-            });
-            // 2. 处理独立的图片 URL 行（纯链接）
-            const lines = answerHtml.split('\n');
-            const processedLines = [];
+            // 新增：处理纯图片URL的情况
+            // 如果整个答案内容是一个图片URL，则直接显示为图片
             const imgUrlPattern = /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|bmp|webp|svg))$/i;
-            for (let line of lines) {
-                const trimmed = line.trim();
-                if (imgUrlPattern.test(trimmed)) {
-                    const proxyUrl = getImageProxyUrl(trimmed);
-                    processedLines.push(`<img src="${escapeHtml(proxyUrl)}" alt="答案图片" style="max-width: 100%; border-radius: 0.75rem;">`);
-                } else {
-                    processedLines.push(line);
+            if (answerData.answer && imgUrlPattern.test(answerData.answer.trim())) {
+                let finalSrc = answerData.answer.trim();
+                // 如果是 Gitee 原始图片链接，尝试通过 API 获取 Base64
+                if (finalSrc.includes('gitee.com') && finalSrc.includes('/raw/')) {
+                    const path = extractPathFromGiteeUrl(finalSrc);
+                    if (path) {
+                        const base64 = await fetchImageBase64FromAPI(path);
+                        if (base64) {
+                            const ext = finalSrc.split('.').pop().split('?')[0];
+                            const mime = ext === 'jpg' ? 'jpeg' : ext;
+                            finalSrc = `data:image/${mime};base64,${base64}`;
+                        }
+                    }
                 }
+                answerHtml = `<img src="${escapeHtml(finalSrc)}" alt="答案图片" style="max-width: 100%; border-radius: 0.75rem;">`;
+            } else if (answerHtml) {
+                // 否则，处理答案内容中的独立图片URL行
+                const lines = answerHtml.split('\n');
+                const processedLines = [];
+                for (const line of lines) {
+                    // 检查是否整行是一个图片URL（去除HTML标签后）
+                    const cleanLine = line.replace(/<[^>]*>/g, '').trim();
+                    if (imgUrlPattern.test(cleanLine)) {
+                        let finalSrc = cleanLine;
+                        if (finalSrc.includes('gitee.com') && finalSrc.includes('/raw/')) {
+                            const path = extractPathFromGiteeUrl(finalSrc);
+                            if (path) {
+                                const base64 = await fetchImageBase64FromAPI(path);
+                                if (base64) {
+                                    const ext = finalSrc.split('.').pop().split('?')[0];
+                                    const mime = ext === 'jpg' ? 'jpeg' : ext;
+                                    finalSrc = `data:image/${mime};base64,${base64}`;
+                                }
+                            }
+                        }
+                        processedLines.push(`<img src="${escapeHtml(finalSrc)}" alt="答案图片" style="max-width: 100%; border-radius: 0.75rem;">`);
+                    } else {
+                        processedLines.push(line);
+                    }
+                }
+                answerHtml = processedLines.join('\n');
             }
-            answerHtml = processedLines.join('\n');
 
             bodyDiv.innerHTML = answerHtml;
+
+            // 新增：处理 Markdown 渲染后的 img 标签
+            const imgs = bodyDiv.querySelectorAll('img');
+            for (const img of imgs) {
+                let src = img.getAttribute('src');
+                if (src && src.includes('gitee.com') && src.includes('/raw/')) {
+                    const path = extractPathFromGiteeUrl(src);
+                    if (path) {
+                        const base64 = await fetchImageBase64FromAPI(path);
+                        if (base64) {
+                            const ext = src.split('.').pop().split('?')[0];
+                            const mime = ext === 'jpg' ? 'jpeg' : ext;
+                            img.src = `data:image/${mime};base64,${base64}`;
+                        }
+                    }
+                }
+            }
 
             // 附件
             let attachmentsHtml = '';
             if (answerData.attachments && answerData.attachments.length) {
                 attachmentsHtml = '<strong><i class="fas fa-paperclip"></i> 附件：</strong><br>';
                 for (const url of answerData.attachments) {
+                    // 修改：为附件链接添加 rel="noreferrer"
                     attachmentsHtml += `<a href="${escapeHtml(url)}" target="_blank" rel="noreferrer"><i class="fas fa-external-link-alt"></i> ${escapeHtml(url)}</a><br>`;
                 }
             } else {
@@ -1011,15 +1086,15 @@
             });
         }
 
-        // 从仓库加载作业数据（通过 Worker）
+        // 从仓库加载作业数据（使用 Gitee API）
         async function fetchHomeworkData() {
             container.innerHTML = `<div class="full-width-msg loading"><i class="fas fa-spinner fa-pulse"></i> 正在拉取最新数据...</div>`;
             warningContainer.innerHTML = '';
             try {
                 // 并行获取作业数据和答案数据
                 const [homeworkData, answersData] = await Promise.all([
-                    fetchJsonViaWorker('homework.json'),
-                    fetchJsonViaWorker('answer.json').catch(() => ({}))
+                    fetchFileViaAPI(DATA_URL),
+                    fetchFileViaAPI(ANSWER_URL).catch(() => ({}))
                 ]);
 
                 if (Array.isArray(homeworkData) && homeworkData.length) {
@@ -1035,7 +1110,7 @@
                 console.error(err);
                 currentHomeworkList = [];
                 renderHomeworks();
-                container.innerHTML = `<div class="full-width-msg error-message"><i class="fas fa-exclamation-triangle"></i> 无法加载作业数据，请检查网络或仓库地址。</div>`;
+                container.innerHTML = `<div class="full-width-msg error-message"><i class="fas fa-exclamation-triangle"></i> 无法加载作业数据，请检查仓库或网络连接。</div>`;
                 warningContainer.innerHTML = `<div class="warning-message"><i class="fas fa-exclamation-triangle"></i> 数据加载失败: ${err.message}</div>`;
             }
         }
@@ -1143,19 +1218,24 @@
             const answerText = document.getElementById('answerContent').value.trim();
             if (!jobIdInput) { showToast('请填写作业ID', true); return; }
 
-            // 智能匹配作业ID逻辑
+            // 新增：智能匹配作业ID逻辑
             let finalJobId = null;
+
+            // 首先检查是否已经是完整ID（存在于作业列表中）
             const jobExistsAsId = currentHomeworkList.find(hw => hw.id === jobIdInput);
             if (jobExistsAsId) {
                 finalJobId = jobIdInput;
             } else {
+                // 尝试匹配作业名称（homeworkName）
                 const matchingHomework = currentHomeworkList.find(hw =>
                     hw.homeworkName === jobIdInput ||
                     hw.homeworkName.replace(/[-\s]/g, '_') === jobIdInput
                 );
+
                 if (matchingHomework) {
                     finalJobId = matchingHomework.id;
                 } else {
+                    // 如果还是没找到，尝试用输入作为作业名，与所有科目拼接后匹配
                     for (const hw of currentHomeworkList) {
                         const generatedId = generateId(hw.subject, jobIdInput);
                         if (generatedId === hw.id) {
@@ -1168,7 +1248,8 @@
 
             if (!finalJobId) {
                 showToast(`⚠️ 未找到匹配的作业ID或作业名称: "${jobIdInput}"`, true);
-                finalJobId = jobIdInput;
+                // 不阻止生成，但给出警告（保持灵活性）
+                finalJobId = jobIdInput; // 使用原始输入作为后备
             }
 
             const today = new Date().toISOString().slice(0, 10);
@@ -1177,6 +1258,7 @@
                 attachments: [],
                 lastUpdated: today
             };
+            // 修改：直接 stringify answerObj 而不是包装对象
             latestAnswerJson = `"${finalJobId}": ${JSON.stringify(answerObj, null, 2)}`;
             const preview = document.getElementById('answerJsonPreview');
             preview.textContent = latestAnswerJson;
