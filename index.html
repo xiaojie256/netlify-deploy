@@ -876,17 +876,11 @@
         function getDeadlineMessage(endDate) {
             if (!endDate || endDate === '暂定') return '⏳ 截止日期暂定';
             const parts = endDate.split('.');
-            if (parts.length === 2) {
+            if (parts.length === 3) {
                 const now = new Date();
-                const year = now.getFullYear();
-                let targetDate = new Date(year, parseInt(parts[0]) - 1, parseInt(parts[1]));
+                const targetDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
 
-                // 如果目标日期已过，则尝试下一年
-                if (targetDate < now) {
-                    targetDate = new Date(year + 1, parseInt(parts[0]) - 1, parseInt(parts[1]));
-                }
-
-                // 再次检查是否已过期（包括跨年情况）
+                // 如果目标日期已过，则返回已过期
                 if (targetDate < now) {
                     return '⚠️ 已过期';
                 }

@@ -5,8 +5,8 @@
     "status": "已完成",
     "homeworkName": "4.10习题",
     "platform": "雨课堂",
-    "startDate": "3.30",
-    "endDate": "4.18"
+    "startDate": "2026.3.30",
+    "endDate": "2026.4.18"
   },
   {
     "id": "编译原理_作业5_正规式与有限自动机理论",
@@ -14,8 +14,8 @@
     "status": "已完成",
     "homeworkName": "作业5-正规式与有限自动机理论",
     "platform": "学习通",
-    "startDate": "3.30",
-    "endDate": "4.3"
+    "startDate": "2026.3.30",
+    "endDate": "2026.4.3"
   },
   {
     "id": "嵌入式系统_控制海龟移动",
@@ -23,7 +23,7 @@
     "status": "未完成",
     "homeworkName": "控制海龟移动",
     "platform": "学习通",
-    "startDate": "3.13",
+    "startDate": "2026.3.13",
     "endDate": "暂定"
   },
   {
@@ -32,8 +32,8 @@
     "status": "未完成",
     "homeworkName": "实验报告-实验4",
     "platform": "雨课堂",
-    "startDate": "3.30",
-    "endDate": "4.18"
+    "startDate": "2026.3.30",
+    "endDate": "2026.4.18"
   },
   {
     "id": "软件工程_作业4_经济可行性分析",
@@ -41,8 +41,8 @@
     "status": "已完成",
     "homeworkName": "作业4-经济可行性分析",
     "platform": "学习通",
-    "startDate": "3.29",
-    "endDate": "4.5"
+    "startDate": "2026.3.29",
+    "endDate": "2026.4.5"
   },
   {
     "id": "软件工程_作业3_可行性研究",
@@ -50,7 +50,7 @@
     "status": "已完成",
     "homeworkName": "作业3-可行性研究",
     "platform": "学习通",
-    "startDate": "3.29",
-    "endDate": "4.2"
+    "startDate": "2026.3.29",
+    "endDate": "2026.4.2"
   }
 ]
