@@ -880,10 +880,21 @@
                 const now = new Date();
                 const year = now.getFullYear();
                 let targetDate = new Date(year, parseInt(parts[0]) - 1, parseInt(parts[1]));
-                if (targetDate < now) targetDate = new Date(year + 1, parseInt(parts[0]) - 1, parseInt(parts[1]));
+                // 如果目标日期已过，则尝试下一年
+                if (targetDate < now) {
+                    targetDate = new Date(year + 1, parseInt(parts[0]) - 1, parseInt(parts[1]));
+                    // 再次检查是否仍小于当前日期（跨年场景）
+                    if (targetDate < now) {
+                        // 确认已过期
+                        const diffDays = Math.floor((now - targetDate) / (1000 * 60 * 60 * 24));
+                        return `⚠️ 已过期 ${diffDays} 天`;
+                    }
+                }
                 const diffDays = Math.ceil((targetDate - now) / (1000 * 60 * 60 * 24));
-                if (diffDays < 0) return `⚠️ 已过期 ${Math.abs(diffDays)} 天`;
-                if (diffDays === 0) return '🔥 今天截止';
+                if (diffDays <= 0) {
+                    // 精确处理当天过期的情况
+                    return '🔥 今天截止';
+                }
                 return `📅 剩余 ${diffDays} 天`;
             }
             return `📅 截止 ${endDate}`;
@@ -1132,8 +1143,32 @@
             } catch (err) { showToast(err.message, true); updateJsonPreview(null); }
         }
         function handleCopyJson() {
-            if (!latestGeneratedJson) { showToast('无JSON可复制', true); return; }
-            navigator.clipboard.writeText(latestGeneratedJson).then(() => showToast('已复制')).catch(() => showToast('复制失败', true));
+            if (!latestGeneratedJson) {
+                showToast('无JSON可复制', true);
+                return;
+            }
+            // 使用更健壮的复制方法
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(latestGeneratedJson).then(() => {
+                    showToast('已复制');
+                }).catch(err => {
+                    console.error('复制失败:', err);
+                    showToast('复制失败，请手动复制', true);
+                });
+            } else {
+                // 降级方案
+                const textarea = document.createElement('textarea');
+                textarea.value = latestGeneratedJson;
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast('已复制');
+                } catch (err) {
+                    showToast('复制失败，请手动复制', true);
+                }
+                document.body.removeChild(textarea);
+            }
         }
 
         // ---------- 答案生成助手 (无示例填充) ----------
@@ -1141,7 +1176,10 @@
         function generateAnswerSegment() {
             const jobIdInput = document.getElementById('answerJobId').value.trim();
             const answerText = document.getElementById('answerContent').value.trim();
-            if (!jobIdInput) { showToast('请填写作业ID', true); return; }
+            if (!jobIdInput) {
+                showToast('请填写作业ID', true);
+                return;
+            }
 
             // 智能匹配作业ID逻辑
             let finalJobId = null;
@@ -1184,8 +1222,32 @@
             showToast('答案JSON已生成');
         }
         function copyAnswerJson() {
-            if (!latestAnswerJson) { showToast('请先生成答案JSON', true); return; }
-            navigator.clipboard.writeText(latestAnswerJson).then(() => showToast('答案JSON已复制')).catch(() => showToast('复制失败', true));
+            if (!latestAnswerJson) {
+                showToast('请先生成答案JSON', true);
+                return;
+            }
+            // 使用更健壮的复制方法
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(latestAnswerJson).then(() => {
+                    showToast('答案JSON已复制');
+                }).catch(err => {
+                    console.error('复制失败:', err);
+                    showToast('复制失败，请手动复制', true);
+                });
+            } else {
+                // 降级方案
+                const textarea = document.createElement('textarea');
+                textarea.value = latestAnswerJson;
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast('答案JSON已复制');
+                } catch (err) {
+                    showToast('复制失败，请手动复制', true);
+                }
+                document.body.removeChild(textarea);
+            }
         }
 
         function initConverterAndHelper() {
