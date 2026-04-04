@@ -883,12 +883,10 @@
                 // 如果目标日期已过，则尝试下一年
                 if (targetDate < now) {
                     targetDate = new Date(year + 1, parseInt(parts[0]) - 1, parseInt(parts[1]));
-                    // 再次检查是否仍小于当前日期（跨年场景）
-                    if (targetDate < now) {
-                        // 确认已过期
-                        const diffDays = Math.floor((now - targetDate) / (1000 * 60 * 60 * 24));
-                        return `⚠️ 已过期 ${diffDays} 天`;
-                    }
+                }
+                // 再次检查是否已过期
+                if (targetDate < now) {
+                    return '⚠️ 已过期';
                 }
                 const diffDays = Math.ceil((targetDate - now) / (1000 * 60 * 60 * 24));
                 if (diffDays <= 0) {
