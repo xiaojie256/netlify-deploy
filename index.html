@@ -479,9 +479,22 @@
             align-self: flex-start;
         }
 
+        /* 新增：已过期状态的红色背景样式 */
+        .deadline.expired {
+            background: #fee2e2;
+            color: #b91c1c;
+            box-shadow: 0 2px 4px rgba(185, 28, 28, 0.2);
+        }
+
         body.dark .deadline {
             background: #2d3a5e;
             color: #c7d2fe;
+        }
+
+        /* 新增：暗色模式下已过期状态的样式 */
+        body.dark .deadline.expired {
+            background: #450a0a;
+            color: #fca5a5;
         }
 
         .answer-btn {
@@ -709,6 +722,15 @@
                 <button class="filter-btn" data-filter="未完成">未完成</button>
                 <button class="filter-btn" data-filter="已完成">已完成</button>
             </div>
+            <!-- 新增: 时间筛选下拉菜单 -->
+            <div class="filter-group">
+                <select id="timeFilter" class="filter-btn" style="background: white; color: #475569;">
+                    <option value="all">所有时间</option>
+                    <option value="today">今天</option>
+                    <option value="week">最近一周</option>
+                    <option value="month">最近一月</option>
+                </select>
+            </div>
             <button class="refresh-btn" id="refreshBtn"><i class="fas fa-sync-alt"></i> 同步数据</button>
         </div>
 
@@ -736,8 +758,40 @@
                 <h3><i class="fas fa-exchange-alt"></i> 作业文本转换助手</h3>
                 <span class="magic-badge"><i class="fas fa-magic"></i> 智能解析 → JSON (含id)</span>
             </div>
+            <!-- 切换模式按钮 -->
+            <div style="text-align: right; margin-bottom: 1rem;">
+                <button id="toggleInputMode" class="refresh-btn" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                    <i class="fas fa-edit"></i> 切换到快速填写
+                </button>
+            </div>
+
+            <!-- 自由文本输入区（默认显示） -->
             <textarea id="inputHomeworkText" class="converter-textarea" rows="6"
                 placeholder="请在此粘贴作业信息。支持科目、状态、作业名称、平台、起止日期。转换后将自动生成唯一ID。"></textarea>
+
+            <!-- 快速填写表单（默认隐藏） -->
+            <div id="quickForm" style="display: none; margin-top: 1rem; gap: 1rem; flex-direction: column;">
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <input type="text" id="quickSubject" placeholder="科目（必填）" class="converter-textarea"
+                        style="flex: 1; min-width: 200px; padding: 0.8rem;">
+                    <select id="quickStatus" class="converter-textarea"
+                        style="flex: 1; min-width: 150px; padding: 0.8rem;">
+                        <option value="未完成">未完成</option>
+                        <option value="已完成">已完成</option>
+                    </select>
+                </div>
+                <input type="text" id="quickHomeworkName" placeholder="作业名称（必填）" class="converter-textarea"
+                    style="padding: 0.8rem;">
+                <input type="text" id="quickPlatform" placeholder="平台（如：学习通、雨课堂）" class="converter-textarea"
+                    style="padding: 0.8rem;">
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <input type="text" id="quickStartDate" placeholder="开始日期（如：2026.3.30）" class="converter-textarea"
+                        style="flex: 1; min-width: 150px; padding: 0.8rem;">
+                    <input type="text" id="quickEndDate" placeholder="结束日期（如：2026.4.18 或 暂定）" class="converter-textarea"
+                        style="flex: 1; min-width: 150px; padding: 0.8rem;">
+                </div>
+            </div>
+
             <div class="btn-group">
                 <button id="convertBtn" class="refresh-btn btn-convert"><i class="fas fa-code"></i> 转换为JSON</button>
                 <button id="copyJsonBtn" class="refresh-btn btn-copy"><i class="fas fa-copy"></i> 复制JSON</button>
@@ -810,6 +864,7 @@
         let currentHomeworkList = [];      // 作业列表 (每个作业带 id)
         let answersMap = {};               // id -> { answer, attachments, lastUpdated }
         let currentFilter = 'all';
+        let currentTimeFilter = 'all'; // 新增: 当前时间筛选条件
 
         const container = document.getElementById('homeworkContainer');
         const warningContainer = document.getElementById('warningContainer');
@@ -875,8 +930,9 @@
             completedSpan.innerText = completed;
         }
 
-        function getDeadlineMessage(endDate) {
-            if (!endDate || endDate === '暂定') return '⏳ 截止日期暂定';
+        // 修改：返回对象包含消息文本和是否过期的状态
+        function getDeadlineInfo(endDate) {
+            if (!endDate || endDate === '暂定') return { text: '⏳ 截止日期暂定', isExpired: false };
             const parts = endDate.split('.');
             if (parts.length === 3) {
                 const now = new Date();
@@ -884,17 +940,17 @@
 
                 // 如果目标日期已过，则返回已过期
                 if (targetDate < now) {
-                    return '⚠️ 已过期';
+                    return { text: '⚠️ 已过期', isExpired: true };
                 }
 
                 const diffDays = Math.ceil((targetDate - now) / (1000 * 60 * 60 * 24));
                 if (diffDays <= 0) {
                     // 精确处理当天过期的情况
-                    return '🔥 今天截止';
+                    return { text: '🔥 今天截止', isExpired: false };
                 }
-                return `📅 剩余 ${diffDays} 天`;
+                return { text: `📅 剩余 ${diffDays} 天`, isExpired: false };
             }
-            return `📅 截止 ${endDate}`;
+            return { text: `📅 截止 ${endDate}`, isExpired: false };
         }
 
         // 显示答案模态框
@@ -963,6 +1019,44 @@
             document.getElementById('answerModal').style.display = 'none';
         }
 
+        // 新增: 辅助函数，将日期字符串 (YYYY.M.D) 转换为 Date 对象
+        function parseDateStr(dateStr) {
+            if (!dateStr || dateStr === '暂定' || dateStr === '未填写') {
+                return null;
+            }
+            const parts = dateStr.split('.').map(Number);
+            if (parts.length !== 3) return null;
+            // 注意月份是从0开始的
+            return new Date(parts[0], parts[1] - 1, parts[2]);
+        }
+
+        // 新增: 判断作业是否在选定的时间范围内
+        function isWithinTimeFilter(homework) {
+            if (currentTimeFilter === 'all') return true;
+
+            const startDate = parseDateStr(homework.startDate);
+            if (!startDate) return false;
+
+            const now = new Date();
+            let timeThreshold;
+
+            switch (currentTimeFilter) {
+                case 'today':
+                    timeThreshold = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    break;
+                case 'week':
+                    timeThreshold = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+                    break;
+                case 'month':
+                    timeThreshold = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+                    break;
+                default:
+                    return true;
+            }
+
+            return startDate >= timeThreshold;
+        }
+
         function renderHomeworks() {
             if (!currentHomeworkList.length) {
                 container.innerHTML = `<div class="full-width-msg error-message"><i class="fas fa-folder-open" style="font-size: 2rem;"></i>暂无作业数据，请检查网络或仓库地址</div>`;
@@ -970,9 +1064,13 @@
                 return;
             }
             let filteredList = currentHomeworkList;
+            // 应用状态筛选
             if (currentFilter !== 'all') {
                 filteredList = currentHomeworkList.filter(item => item.status === currentFilter);
             }
+            // 新增: 应用时间筛选
+            filteredList = filteredList.filter(isWithinTimeFilter);
+
             updateStats(filteredList);
             if (filteredList.length === 0) {
                 container.innerHTML = `<div class="full-width-msg error-message" style="background: transparent;">没有找到符合“${currentFilter}”状态的作业～</div>`;
@@ -980,7 +1078,11 @@
             }
             const cardsHtml = filteredList.map(hw => {
                 const statusClass = hw.status === '已完成' ? 'completed' : '';
-                const deadlineMsg = getDeadlineMessage(hw.endDate);
+                // 修改：获取包含状态的对象
+                const deadlineInfo = getDeadlineInfo(hw.endDate);
+                // 修改：根据 isExpired dynamically 添加 expired 类
+                const deadlineClass = deadlineInfo.isExpired ? 'deadline expired' : 'deadline';
+
                 const showAnswerBtn = (hw.status === '已完成') ? `<button class="answer-btn" data-id="${escapeHtml(hw.id)}"><i class="fas fa-eye"></i> 查看答案</button>` : '';
                 return `
                 <div class="homework-card">
@@ -993,7 +1095,7 @@
                         <div class="detail-item"><i class="fas fa-chalkboard-user"></i> 平台：${escapeHtml(hw.platform)}</div>
                         <div class="detail-item"><i class="fas fa-calendar-alt"></i> 开始：${escapeHtml(hw.startDate)}</div>
                         <div class="detail-item"><i class="fas fa-flag-checkered"></i> 结束：${escapeHtml(hw.endDate)}</div>
-                        <div class="deadline"><i class="far fa-clock"></i> ${deadlineMsg}</div>
+                        <div class="${deadlineClass}"><i class="far fa-clock"></i> ${deadlineInfo.text}</div>
                     </div>
                     ${showAnswerBtn}
                 </div>
@@ -1034,6 +1136,19 @@
                     let validated = homeworkData.filter(item => item.subject && item.status && item.homeworkName);
                     if (validated.length === 0) throw new Error('作业数据为空或不完整');
                     validated = ensureHomeworkIds(validated);
+
+                    // 新增：按 startDate 降序排序（越新越靠前）
+                    validated.sort((a, b) => {
+                        const parseDate = (dateStr) => {
+                            if (!dateStr || dateStr === '未填写') return 0;
+                            const parts = dateStr.split('.').map(Number);
+                            if (parts.length !== 3) return 0;
+                            // 补零并构造可比较字符串 YYYYMMDD
+                            return parseInt(`${parts[0]}${String(parts[1]).padStart(2, '0')}${String(parts[2]).padStart(2, '0')}`);
+                        };
+                        return parseDate(b.startDate) - parseDate(a.startDate);
+                    });
+
                     currentHomeworkList = validated;
                 } else throw new Error('无效数据格式');
 
@@ -1051,7 +1166,7 @@
         async function forceRefresh() { await fetchHomeworkData(); }
 
         function bindFilters() {
-            const btns = document.querySelectorAll('.filter-btn');
+            const btns = document.querySelectorAll('.filter-btn[data-filter]');
             btns.forEach(btn => {
                 btn.addEventListener('click', () => {
                     const filterValue = btn.getAttribute('data-filter');
@@ -1061,6 +1176,15 @@
                     renderHomeworks();
                 });
             });
+
+            // 新增: 绑定时间筛选下拉菜单事件
+            const timeFilterSelect = document.getElementById('timeFilter');
+            if (timeFilterSelect) {
+                timeFilterSelect.addEventListener('change', () => {
+                    currentTimeFilter = timeFilterSelect.value;
+                    renderHomeworks();
+                });
+            }
         }
 
         function detectDarkMode() {
@@ -1068,8 +1192,29 @@
             window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => e.matches ? document.body.classList.add('dark') : document.body.classList.remove('dark'));
         }
 
-        // ---------- 转换器 (无示例填充) ----------
+        // ---------- 转换器 (增强：支持快速填写模式) ----------
         let latestGeneratedJson = null;
+        let isQuickMode = false;
+
+        function toggleInputMode() {
+            const textArea = document.getElementById('inputHomeworkText');
+            const quickForm = document.getElementById('quickForm');
+            const btn = document.getElementById('toggleInputMode');
+            isQuickMode = !isQuickMode;
+            if (isQuickMode) {
+                textArea.style.display = 'none';
+                quickForm.style.display = 'flex';
+                btn.innerHTML = '<i class="fas fa-file-alt"></i> 切换到自由文本';
+            } else {
+                textArea.style.display = 'block';
+                quickForm.style.display = 'none';
+                btn.innerHTML = '<i class="fas fa-edit"></i> 切换到快速填写';
+            }
+            // 清空预览
+            document.getElementById('jsonPreview').textContent = isQuickMode ? '✨ 填写表单后点击转换...' : '⚡ 等待输入文本进行转换...';
+            latestGeneratedJson = null;
+        }
+
         function parseHomeworkFromText(text) {
             const lines = text.split(/\r?\n/);
             let subject = '', status = '未完成', homeworkName = '', platform = '', startDate = '', endDate = '';
@@ -1111,13 +1256,40 @@
             const id = generateId(subject, homeworkName);
             return { id, subject, status, homeworkName, platform, startDate, endDate };
         }
-        function showToast(msg, isError = false) {
-            const toast = document.getElementById('copyToast');
-            toast.textContent = isError ? `⚠️ ${msg}` : `✅ ${msg}`;
-            toast.style.background = isError ? '#b91c1c' : '#1e293b';
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 2000);
+
+        function parseHomeworkFromQuickForm() {
+            const subject = document.getElementById('quickSubject').value.trim();
+            const status = document.getElementById('quickStatus').value;
+            const homeworkName = document.getElementById('quickHomeworkName').value.trim();
+            const platform = document.getElementById('quickPlatform').value.trim() || '未指定平台';
+            const startDate = document.getElementById('quickStartDate').value.trim() || '未填写';
+            const endDate = document.getElementById('quickEndDate').value.trim() || '暂定';
+
+            if (!subject) throw new Error('❌ 科目不能为空');
+            if (!homeworkName) throw new Error('❌ 作业名称不能为空');
+
+            const id = generateId(subject, homeworkName);
+            return { id, subject, status, homeworkName, platform, startDate, endDate };
         }
+
+        function handleConvert() {
+            try {
+                let parsed;
+                if (isQuickMode) {
+                    parsed = parseHomeworkFromQuickForm();
+                } else {
+                    const raw = document.getElementById('inputHomeworkText').value;
+                    if (!raw.trim()) { showToast('请输入内容', true); return; }
+                    parsed = parseHomeworkFromText(raw);
+                }
+                updateJsonPreview(parsed);
+                showToast('转换成功');
+            } catch (err) {
+                showToast(err.message, true);
+                updateJsonPreview(null);
+            }
+        }
+
         function updateJsonPreview(obj) {
             const pre = document.getElementById('jsonPreview');
             if (obj && typeof obj === 'object') {
@@ -1130,15 +1302,7 @@
                 pre.style.color = '#ef4444';
             }
         }
-        function handleConvert() {
-            const raw = document.getElementById('inputHomeworkText').value;
-            if (!raw.trim()) { showToast('请输入内容', true); return; }
-            try {
-                const parsed = parseHomeworkFromText(raw);
-                updateJsonPreview(parsed);
-                showToast('转换成功');
-            } catch (err) { showToast(err.message, true); updateJsonPreview(null); }
-        }
+
         function handleCopyJson() {
             if (!latestGeneratedJson) {
                 showToast('无JSON可复制', true);
@@ -1250,6 +1414,7 @@
         function initConverterAndHelper() {
             document.getElementById('convertBtn').addEventListener('click', handleConvert);
             document.getElementById('copyJsonBtn').addEventListener('click', handleCopyJson);
+            document.getElementById('toggleInputMode').addEventListener('click', toggleInputMode);
             document.getElementById('generateAnswerBtn').addEventListener('click', generateAnswerSegment);
             document.getElementById('copyAnswerJsonBtn').addEventListener('click', copyAnswerJson);
         }
