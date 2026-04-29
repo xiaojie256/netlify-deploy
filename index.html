@@ -1151,6 +1151,37 @@
             return `${WORKER_BASE}/images/${encodeURIComponent(path)}`;
         }
 
+        // ---------- 新增：Blob 转换下载处理函数 ----------
+        async function downloadAttachment(originalUrl, fileName) {
+            try {
+                showToast('正在准备下载...', false);
+                // 使用现有的 Worker 代理绕过浏览器的跨域限制 (CORS)
+                const proxyUrl = getImageProxyUrl(originalUrl);
+                const resp = await fetch(proxyUrl);
+                if (!resp.ok) throw new Error('代理下载请求失败');
+
+                const blob = await resp.blob();
+                const blobUrl = URL.createObjectURL(blob);
+
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = blobUrl;
+                a.download = fileName; // 在这里强制赋予前端清理过单引号的文件名
+
+                document.body.appendChild(a);
+                a.click();
+
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(blobUrl);
+                }, 100);
+            } catch (err) {
+                console.error('Blob 下载失败，回退为直接跳转:', err);
+                window.open(originalUrl, '_blank');
+            }
+        }
+        // ------------------------------------------------
+
         function updateStats(list) {
             totalSpan.innerText = list.length;
             pendingSpan.innerText = list.filter(item => item.status === '未完成').length;
@@ -1211,22 +1242,26 @@
                 }
                 rawContent = data.answer || '无答案内容';
 
-                // 附件渲染 (仅答案常用)
+                // 修改核心：附件渲染 (通过 Blob 下载绕过服务器返回单引号问题)
                 let attachmentsHtml = '';
                 if (data.attachments && data.attachments.length) {
                     attachmentsHtml = '<strong><i class="fas fa-paperclip"></i> 附件：</strong><br>';
                     for (const url of data.attachments) {
-                        attachmentsHtml += `<a href="${escapeHtml(url)}" target="_blank" rel="noreferrer"><i class="fas fa-external-link-alt"></i> 附件链接预览</a><br>`;
+                        const decodedUrl = decodeURIComponent(url);
+                        let cleanFileName = decodedUrl.substring(decodedUrl.lastIndexOf('/') + 1) || '附件文件';
+                        // 过滤可能包含的单双引号
+                        cleanFileName = cleanFileName.replace(/['"]/g, '');
+                        const safeUrl = url.replace(/'/g, "\\'"); // 防止破坏拼接的字符串
+                        attachmentsHtml += `<a href="javascript:void(0)" onclick="downloadAttachment('${safeUrl}', '${escapeHtml(cleanFileName)}')" title="点击下载"><i class="fas fa-download"></i> 下载：${escapeHtml(cleanFileName)}</a><br>`;
                     }
                 }
                 attachDiv.innerHTML = attachmentsHtml;
             }
 
-            // --- 修改核心：保护并还原 LaTeX 公式 ---
+            // --- 保护并还原 LaTeX 公式 ---
             let mathBlocks = [];
             let safeContent = rawContent;
 
-            // 1. 预处理提取 LaTeX 公式防止 marked.js 破坏格式
             if (safeContent !== "(空答案)") {
                 safeContent = safeContent.replace(/\$\$([\s\S]+?)\$\$/g, (match) => {
                     mathBlocks.push(match);
@@ -1238,7 +1273,7 @@
                 });
             }
 
-            // 2. 正常渲染 Markdown
+            // 正常渲染 Markdown
             let contentHtml = safeContent;
             if (safeContent === "(空答案)") {
                 contentHtml = "";
@@ -1248,7 +1283,7 @@
                 contentHtml = `<pre>${escapeHtml(safeContent)}</pre>`;
             }
 
-            // 3. 将原公式内容还原，并转义 < > 防止被误判为 HTML
+            // 将原公式内容还原
             if (mathBlocks.length > 0) {
                 const escapeMath = (str) => str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 contentHtml = contentHtml.replace(/MATHBLOCKPLACEHOLDER(\d+)ENDMATH/g, (match, p1) => escapeMath(mathBlocks[p1]));
@@ -1278,7 +1313,7 @@
             updateSpan.innerHTML = `📅 最后更新: ${data.lastUpdated || '未知'}`;
             modal.style.display = 'flex';
 
-            // 4. 调用 MathJax 进行页面上公式的渲染处理
+            // 调用 MathJax 进行页面上公式的渲染处理
             if (window.MathJax && window.MathJax.typesetPromise) {
                 MathJax.typesetPromise([bodyDiv]).catch((err) => console.error(err.message));
             }
