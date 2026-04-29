@@ -1151,48 +1151,18 @@
             return `${WORKER_BASE}/images/${encodeURIComponent(path)}`;
         }
 
-        // ---------- 新增：具有多层降级策略的 Blob 下载处理函数 ----------
+        // ---------- 新增：Blob 转换下载处理函数 ----------
         async function downloadAttachment(originalUrl, fileName) {
             try {
                 showToast('正在准备下载...', false);
-                let blob = null;
+                // 使用现有的 Worker 代理绕过浏览器的跨域限制 (CORS)
+                const proxyUrl = getImageProxyUrl(originalUrl);
+                const resp = await fetch(proxyUrl);
+                if (!resp.ok) throw new Error('代理下载请求失败');
 
-                // 策略 1: 尝试使用你现有的图片代理 Worker (如果它支持非图片文件)
-                try {
-                    const proxyUrl1 = getImageProxyUrl(originalUrl);
-                    const res1 = await fetch(proxyUrl1);
-                    if (res1.ok) {
-                        blob = await res1.blob();
-                    } else {
-                        throw new Error('API代理返回非OK状态');
-                    }
-                } catch (e1) {
-                    console.warn('默认代理获取文件失败，尝试备用代理通道...', e1);
-                    // 策略 2: 尝试使用高可用的公共 CORS 代理 (无痛绕过跨域并抓取大文件)
-                    try {
-                        const proxyUrl2 = `https://api.allorigins.win/raw?url=${encodeURIComponent(originalUrl)}`;
-                        const res2 = await fetch(proxyUrl2);
-                        if (res2.ok) {
-                            blob = await res2.blob();
-                        } else {
-                            throw new Error('公共备用代理返回非OK状态');
-                        }
-                    } catch (e2) {
-                        console.warn('公共代理获取文件失败，尝试强行直连...', e2);
-                        // 策略 3: 碰运气直连 (万一浏览器或服务器有缓存且允许跨域)
-                        const res3 = await fetch(originalUrl);
-                        if (res3.ok) {
-                            blob = await res3.blob();
-                        } else {
-                            throw new Error('所有 fetch 获取策略均失败');
-                        }
-                    }
-                }
-
-                if (!blob) throw new Error('流获取失败');
-
-                // 拿到纯净 Blob，创建本地同源 URL 并触发纯净下载
+                const blob = await resp.blob();
                 const blobUrl = URL.createObjectURL(blob);
+
                 const a = document.createElement('a');
                 a.style.display = 'none';
                 a.href = blobUrl;
@@ -1204,22 +1174,10 @@
                 setTimeout(() => {
                     document.body.removeChild(a);
                     URL.revokeObjectURL(blobUrl);
-                    showToast('下载已成功触发！', false);
-                }, 200);
-
+                }, 100);
             } catch (err) {
-                // 如果以上所有的 Blob 拦截手段依然失败，才会执行原生跳转 (这就躲不掉单引号了)
-                console.error('Blob 下载彻底失败，回退为浏览器原生下载:', err);
-                showToast('回退到浏览器默认方式下载...', false);
-
-                const a = document.createElement('a');
-                a.href = originalUrl;
-                a.target = '_blank';
-                // 尽人事听天命：跨域状态下这行多半无效，但加了总比不加好
-                a.download = fileName;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+                console.error('Blob 下载失败，回退为直接跳转:', err);
+                window.open(originalUrl, '_blank');
             }
         }
         // ------------------------------------------------
@@ -1284,7 +1242,7 @@
                 }
                 rawContent = data.answer || '无答案内容';
 
-                // 附件渲染 (调用上面的高级增强版 Blob 下载器)
+                // 修改核心：附件渲染 (通过 Blob 下载绕过服务器返回单引号问题)
                 let attachmentsHtml = '';
                 if (data.attachments && data.attachments.length) {
                     attachmentsHtml = '<strong><i class="fas fa-paperclip"></i> 附件：</strong><br>';
