@@ -734,6 +734,35 @@
             font-size: 1rem;
         }
 
+        /* 表格样式 */
+        .content-area table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.95rem;
+        }
+
+        .content-area th,
+        .content-area td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border: 1px solid #e2e8f0;
+        }
+
+        body.dark .content-area th,
+        body.dark .content-area td {
+            border-color: #475569;
+        }
+
+        .content-area th {
+            background-color: #f8fafc;
+            font-weight: 600;
+        }
+
+        body.dark .content-area th {
+            background-color: #1e293b;
+        }
+
         .content-area img {
             max-width: 100%;
             border-radius: 0.75rem;
