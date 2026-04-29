@@ -143,6 +143,53 @@
             transform: translateY(0);
         }
 
+        /* 科目筛选栏 - 新增样式 */
+        .subject-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin-top: 1rem;
+            justify-content: center;
+        }
+
+        .subject-filter-btn {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid #e2e8f0;
+            padding: 0.6rem 1.2rem;
+            border-radius: 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            color: #3b82f6;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        body.dark .subject-filter-btn {
+            background: rgba(30, 41, 59, 0.8);
+            border-color: #334155;
+            color: #93c5fd;
+        }
+
+        .subject-filter-btn:hover {
+            background: rgba(59, 130, 246, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .subject-filter-btn.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        body.dark .subject-filter-btn.active {
+            background: #60a5fa;
+            color: #0f172a;
+        }
+
         /* 统计卡片 */
         .stats {
             display: flex;
@@ -705,6 +752,16 @@
             .stats {
                 flex-direction: column;
             }
+
+            /* 移动端科目筛选 */
+            .subject-filters {
+                margin-top: 0.5rem;
+            }
+
+            .subject-filter-btn {
+                padding: 0.5rem 0.8rem;
+                font-size: 0.85rem;
+            }
         }
     </style>
 </head>
@@ -732,6 +789,11 @@
                 </select>
             </div>
             <button class="refresh-btn" id="refreshBtn"><i class="fas fa-sync-alt"></i> 同步数据</button>
+        </div>
+
+        <!-- 新增: 科目筛选栏 -->
+        <div class="subject-filters" id="subjectFilters">
+            <button class="subject-filter-btn active" data-subject="all"><i class="fas fa-book"></i> 所有科目</button>
         </div>
 
         <div class="stats" id="statsArea">
@@ -865,6 +927,7 @@
         let answersMap = {};               // id -> { answer, attachments, lastUpdated }
         let currentFilter = 'all';
         let currentTimeFilter = 'all'; // 新增: 当前时间筛选条件
+        let currentSubjectFilter = 'all'; // 新增: 当前科目筛选条件
 
         const container = document.getElementById('homeworkContainer');
         const warningContainer = document.getElementById('warningContainer');
@@ -1057,6 +1120,45 @@
             return startDate >= timeThreshold;
         }
 
+        // 新增: 获取所有唯一科目
+        function getUniqueSubjects(homeworkList) {
+            const subjects = new Set();
+            homeworkList.forEach(hw => {
+                if (hw.subject) {
+                    subjects.add(hw.subject);
+                }
+            });
+            return Array.from(subjects).sort();
+        }
+
+        // 新增: 渲染科目筛选按钮
+        function renderSubjectFilters() {
+            const subjectFiltersContainer = document.getElementById('subjectFilters');
+            if (!subjectFiltersContainer) return;
+
+            const uniqueSubjects = getUniqueSubjects(currentHomeworkList);
+            let subjectButtonsHtml = '<button class="subject-filter-btn active" data-subject="all"><i class="fas fa-book"></i> 所有科目</button>';
+
+            uniqueSubjects.forEach(subject => {
+                const isActive = currentSubjectFilter === subject ? ' active' : '';
+                subjectButtonsHtml += `<button class="subject-filter-btn${isActive}" data-subject="${escapeHtml(subject)}"><i class="fas fa-graduation-cap"></i> ${escapeHtml(subject)}</button>`;
+            });
+
+            subjectFiltersContainer.innerHTML = subjectButtonsHtml;
+
+            // 绑定科目筛选事件
+            subjectFiltersContainer.querySelectorAll('.subject-filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const subjectValue = btn.getAttribute('data-subject');
+                    subjectFiltersContainer.querySelectorAll('.subject-filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentSubjectFilter = subjectValue;
+                    renderHomeworks();
+                });
+            });
+        }
+
+        // 修改: 更新渲染函数以包含科目筛选
         function renderHomeworks() {
             if (!currentHomeworkList.length) {
                 container.innerHTML = `<div class="full-width-msg error-message"><i class="fas fa-folder-open" style="font-size: 2rem;"></i>暂无作业数据，请检查网络或仓库地址</div>`;
@@ -1067,6 +1169,10 @@
             // 应用状态筛选
             if (currentFilter !== 'all') {
                 filteredList = currentHomeworkList.filter(item => item.status === currentFilter);
+            }
+            // 新增: 应用科目筛选
+            if (currentSubjectFilter !== 'all') {
+                filteredList = filteredList.filter(item => item.subject === currentSubjectFilter);
             }
             // 新增: 应用时间筛选
             filteredList = filteredList.filter(isWithinTimeFilter);
@@ -1109,6 +1215,9 @@
                     if (id) showAnswer(id);
                 });
             });
+
+            // 更新科目筛选栏
+            renderSubjectFilters();
         }
 
         function escapeHtml(str) {
@@ -1165,6 +1274,7 @@
 
         async function forceRefresh() { await fetchHomeworkData(); }
 
+        // 修改: 初始化时重置科目筛选
         function bindFilters() {
             const btns = document.querySelectorAll('.filter-btn[data-filter]');
             btns.forEach(btn => {
@@ -1173,6 +1283,7 @@
                     btns.forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     currentFilter = filterValue;
+                    currentSubjectFilter = 'all'; // 重置科目筛选
                     renderHomeworks();
                 });
             });
@@ -1182,6 +1293,7 @@
             if (timeFilterSelect) {
                 timeFilterSelect.addEventListener('change', () => {
                     currentTimeFilter = timeFilterSelect.value;
+                    currentSubjectFilter = 'all'; // 重置科目筛选
                     renderHomeworks();
                 });
             }
@@ -1201,6 +1313,7 @@
             const quickForm = document.getElementById('quickForm');
             const btn = document.getElementById('toggleInputMode');
             isQuickMode = !isQuickMode;
+
             if (isQuickMode) {
                 textArea.style.display = 'none';
                 quickForm.style.display = 'flex';
