@@ -1,7 +1,7 @@
 [
   {
     "id": "linux_4_10习题",
-    "subject": "Linux",
+    "subject": "Linux操作系统-数据科学",
     "status": "已完成",
     "homeworkName": "4.10习题",
     "platform": "雨课堂",
@@ -20,7 +20,7 @@
   {
     "id": "嵌入式系统_控制海龟移动",
     "subject": "嵌入式系统",
-    "status": "未完成",
+    "status": "已完成",
     "homeworkName": "控制海龟移动",
     "platform": "学习通",
     "startDate": "2026.3.13",
@@ -28,8 +28,8 @@
   },
   {
     "id": "linux_实验报告_实验4",
-    "subject": "Linux",
-    "status": "未完成",
+    "subject": "Linux操作系统-数据科学",
+    "status": "已完成",
     "homeworkName": "实验报告-实验4",
     "platform": "雨课堂",
     "startDate": "2026.3.30",
@@ -52,5 +52,221 @@
     "platform": "学习通",
     "startDate": "2026.3.29",
     "endDate": "2026.4.2"
-  }
+  },
+  {
+  "id": "linux操作系统_数据科学_3_13习题",
+  "subject": "Linux操作系统-数据科学",
+  "status": "已完成",
+  "homeworkName": "3.13习题",
+  "platform": "雨课堂",
+  "startDate": "2026.3.17",
+  "endDate": "2026.4.3"
+  },
+  {
+  "id": "软件工程_需求分析",
+  "subject": "软件工程",
+  "status": "已完成",
+  "homeworkName": "需求分析",
+  "platform": "学习通",
+  "startDate": "2026.4.5",
+  "endDate": "2026.4.12"
+},
+{
+  "id": "编译原理_正规式与有限自动机理论_下",
+  "subject": "编译原理",
+  "status": "已完成",
+  "homeworkName": "正规式与有限自动机理论（下）",
+  "platform": "学习通",
+  "startDate": "2026.4.13",
+  "endDate": "2026.4.17"
+},
+{
+  "id": "编译原理_实验_winflexbison安装与环境配置",
+  "subject": "编译原理(实验)",
+  "status": "已完成",
+  "homeworkName": "WinFlexBison安装与环境配置",
+  "platform": "学习通",
+  "startDate": "2026.4.13",
+  "endDate": "2026.4.22"
+},
+{
+  "id": "软件工程_结构化分析作业_数据流图",
+  "subject": "软件工程",
+  "status": "已完成",
+  "homeworkName": "结构化分析作业-数据流图",
+  "platform": "学习通",
+  "startDate": "2026.4.12",
+  "endDate": "2026.4.19"
+},
+{
+  "id": "编译原理_实验_flex基础应用",
+  "subject": "编译原理(实验)",
+  "status": "已完成",
+  "homeworkName": "Flex基础应用",
+  "platform": "学习通",
+  "startDate": "2026.4.13",
+  "endDate": "2026.4.22"
+},
+{
+  "id": "linux操作系统_数据科学_5_9习题",
+  "subject": "Linux操作系统-数据科学",
+  "status": "已完成",
+  "homeworkName": "5.9习题",
+  "platform": "雨课堂",
+  "startDate": "2026.4.14",
+  "endDate": "2026.4.30"
+},
+{
+  "id": "linux操作系统_数据科学_实验报告_实验5",
+  "subject": "Linux操作系统-数据科学",
+  "status": "已完成",
+  "homeworkName": "实验报告-实验5",
+  "platform": "雨课堂",
+  "startDate": "2026.4.14",
+  "endDate": "2026.5.1"
+},
+{
+  "id": "编译原理_mini_c语言词法分析器设计",
+  "subject": "编译原理(实验)",
+  "status": "已完成",
+  "homeworkName": "Mini-C语言词法分析器设计",
+  "platform": "学习通",
+  "startDate": "2026.4.20",
+  "endDate": "2026.5.5"
+},
+{
+  "id": "智能终端开发技术_作业4",
+  "subject": "智能终端开发技术",
+  "status": "已完成",
+  "homeworkName": "作业4",
+  "platform": "学习通",
+  "startDate": "2026.4.20",
+  "endDate": "暂定"
+},
+{
+  "id": "智能终端开发技术_作业1",
+  "subject": "智能终端开发技术",
+  "status": "已完成",
+  "homeworkName": "作业1",
+  "platform": "学习通",
+  "startDate": "2026.4.20",
+  "endDate": "暂定"
+},
+{
+  "id": "智能终端开发技术_作业2",
+  "subject": "智能终端开发技术",
+  "status": "已完成",
+  "homeworkName": "作业2",
+  "platform": "学习通",
+  "startDate": "2026.4.20",
+  "endDate": "暂定"
+},
+{
+  "id": "智能终端开发技术_作业3",
+  "subject": "智能终端开发技术",
+  "status": "已完成",
+  "homeworkName": "作业3",
+  "platform": "学习通",
+  "startDate": "2026.4.20",
+  "endDate": "暂定"
+},
+{
+  "id": "编译原理_作业7_自上而下语法分析方法概述",
+  "subject": "编译原理",
+  "status": "已完成",
+  "homeworkName": "作业7：自上而下语法分析方法概述",
+  "platform": "学习通",
+  "startDate": "2026.4.20",
+  "endDate": "2026.4.24"
+},
+{
+  "id": "编译原理_作业8_ll_1_分析方法",
+  "subject": "编译原理",
+  "status": "已完成",
+  "homeworkName": "作业8：LL(1)分析方法",
+  "platform": "学习通",
+  "startDate": "2026.4.20",
+  "endDate": "2026.4.24"
+},
+{
+  "id": "linux操作系统_数据科学_6_8_习题",
+  "subject": "Linux操作系统-数据科学",
+  "status": "已完成",
+  "homeworkName": "6.8 习题",
+  "platform": "雨课堂",
+  "startDate": "2026.4.21",
+  "endDate": "2026.4.30"
+},
+{
+  "id": "linux操作系统_数据科学_实验报告提交_实验6",
+  "subject": "Linux操作系统-数据科学",
+  "status": "已完成",
+  "homeworkName": "实验报告提交 - 实验6",
+  "platform": "雨课堂",
+  "startDate": "2026.4.21",
+  "endDate": "2026.5.1"
+},
+{
+  "id": "嵌入式系统_实验报告1_puppypi初体验",
+  "subject": "嵌入式系统",
+  "status": "未完成",
+  "homeworkName": "实验报告1-PuppyPi初体验",
+  "platform": "学习通",
+  "startDate": "2026.4.26",
+  "endDate": "2026.5.4"
+},
+{
+  "id": "编译原理_随堂练习2026_4_27",
+  "subject": "编译原理",
+  "status": "已完成",
+  "homeworkName": "随堂练习2026.4.27",
+  "platform": "学习通",
+  "startDate": "2026.4.27",
+  "endDate": "2026.4.27"
+},
+{
+    "id": "单片机原理与应用_第三次课后作业",
+    "subject": "单片机原理与应用",
+    "status": "未完成",
+    "homeworkName": "第三次课后作业",
+    "platform": "学习通",
+    "startDate": "2026.4.27",
+    "endDate": "2026.5.9"
+},
+{
+  "id": "linux操作系统_数据科学_7_8习题",
+  "subject": "Linux操作系统-数据科学",
+  "status": "已完成",
+  "homeworkName": "7.8习题",
+  "platform": "雨课堂",
+  "startDate": "2026.4.28",
+  "endDate": "2026.5.15"
+},
+{
+  "id": "编译原理_作业9_预测分析方法",
+  "subject": "编译原理",
+  "status": "已完成",
+  "homeworkName": "作业9:预测分析方法",
+  "platform": "学习通",
+  "startDate": "2026.4.27",
+  "endDate": "2026.5.1"
+},
+{
+  "id": "linux操作系统_数据科学_实验报告提交_实验7",
+  "subject": "Linux操作系统-数据科学",
+  "status": "已完成",
+  "homeworkName": "实验报告提交 - 实验7",
+  "platform": "雨课堂",
+  "startDate": "2026.4.28",
+  "endDate": "2026.5.15"
+},
+{
+  "id": "编译原理_作业10_自下而上语法分析方法概述",
+  "subject": "编译原理",
+  "status": "已完成",
+  "homeworkName": "作业10:自下而上语法分析方法概述",
+  "platform": "学习通",
+  "startDate": "2026.4.28",
+  "endDate": "2026.5.5"
+}
 ]

@@ -1,10 +1,6 @@
 {
-  "linux_4_10习题": {
-    "title": "### Linux 指令填空题\n\n1. 如何查看当前路径？\n2. `mkdir -p` 的 `-p` 含义是什么？\n3. 如何查看一个大文件的末尾 10 行？",
-    "lastUpdated": "2026-03-31"
-  },
-  "编译原理_作业5_正规式与有限自动机理论": {
-    "title": "### 编译原理思考题\n- 请画出正规式 `(a|b)*abb` 的 NFA。\n- 描述子集构造法将 NFA 转为 DFA 的逻辑。",
-    "lastUpdated": "2026-03-31"
+  "编译原理_作业10_自下而上语法分析方法概述": {
+  "title": "给定文法 G：\nE rightarrow E+T mid E-T mid T\nT rightarrow T*F mid T/F mid F\nF rightarrow F uparrow P mid P\nP rightarrow (E) mid i\n\n请回答以下问题：\n\n(1) 画出句型 E+T/F-P uparrow i 的语法分析树；\n\n(2) 给出句型 E+T/F-P uparrow i 的所有短语、直接短语和句柄；\n\n(3) 给出句型 E+T/F-P uparrow i 的所有素短语和最左素短语。",
+  "lastUpdated": "2026-04-29"
   }
 }
