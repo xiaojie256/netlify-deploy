@@ -11,6 +11,21 @@
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+
     <style>
         * {
             margin: 0;
@@ -732,6 +747,8 @@
         .content-area {
             line-height: 1.6;
             font-size: 1rem;
+            overflow-x: auto;
+            /* 防止超长公式撑破弹窗边界 */
         }
 
         /* 表格样式 */
@@ -1003,7 +1020,7 @@
                         style="padding: 0.8rem; margin-top: 0.5rem;" placeholder="例如: 嵌入式系统_控制海龟移动">
                 </div>
                 <textarea id="titleContent" class="answer-textarea" rows="4"
-                    placeholder="在此输入题目内容 (支持 Markdown 语法)"></textarea>
+                    placeholder="在此输入题目内容 (支持 Markdown 语法，如需公式请用 $$ 或 $)"></textarea>
                 <div class="btn-group">
                     <button id="generateTitleBtn" class="refresh-btn btn-convert" style="background: #0ea5e9;"><i
                             class="fas fa-code"></i>
@@ -1026,7 +1043,7 @@
                         style="padding: 0.8rem; margin-top: 0.5rem;" placeholder="例如: 嵌入式系统_控制海龟移动">
                 </div>
                 <textarea id="answerContent" class="answer-textarea" rows="4"
-                    placeholder="在此输入答案内容 (支持 Markdown 语法)"></textarea>
+                    placeholder="在此输入答案内容 (支持 Markdown 语法，如需公式请用 $$ 或 $)"></textarea>
                 <div class="btn-group">
                     <button id="generateAnswerBtn" class="refresh-btn btn-convert"><i class="fas fa-code"></i>
                         生成答案JSON</button>
@@ -1193,14 +1210,37 @@
                 attachDiv.innerHTML = attachmentsHtml;
             }
 
-            // 渲染 Markdown
-            let contentHtml = rawContent;
-            if (rawContent === "(空答案)") {
+            // --- 修改核心：保护并还原 LaTeX 公式 ---
+            let mathBlocks = [];
+            let safeContent = rawContent;
+
+            // 1. 预处理提取 LaTeX 公式防止 marked.js 破坏格式
+            if (safeContent !== "(空答案)") {
+                safeContent = safeContent.replace(/\$\$([\s\S]+?)\$\$/g, (match) => {
+                    mathBlocks.push(match);
+                    return `MATHBLOCKPLACEHOLDER${mathBlocks.length - 1}ENDMATH`;
+                });
+                safeContent = safeContent.replace(/\$([^$]+?)\$/g, (match) => {
+                    mathBlocks.push(match);
+                    return `MATHINLINEPLACEHOLDER${mathBlocks.length - 1}ENDMATH`;
+                });
+            }
+
+            // 2. 正常渲染 Markdown
+            let contentHtml = safeContent;
+            if (safeContent === "(空答案)") {
                 contentHtml = "";
             } else if (typeof marked !== 'undefined') {
-                contentHtml = marked.parse(rawContent);
+                contentHtml = marked.parse(safeContent);
             } else {
-                contentHtml = `<pre>${escapeHtml(rawContent)}</pre>`;
+                contentHtml = `<pre>${escapeHtml(safeContent)}</pre>`;
+            }
+
+            // 3. 将原公式内容还原，并转义 < > 防止被误判为 HTML
+            if (mathBlocks.length > 0) {
+                const escapeMath = (str) => str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                contentHtml = contentHtml.replace(/MATHBLOCKPLACEHOLDER(\d+)ENDMATH/g, (match, p1) => escapeMath(mathBlocks[p1]));
+                contentHtml = contentHtml.replace(/MATHINLINEPLACEHOLDER(\d+)ENDMATH/g, (match, p1) => escapeMath(mathBlocks[p1]));
             }
 
             // 图片代理替换
@@ -1220,9 +1260,16 @@
                     processedLines.push(line);
                 }
             }
+
+            // 写入 DOM
             bodyDiv.innerHTML = processedLines.join('\n');
             updateSpan.innerHTML = `📅 最后更新: ${data.lastUpdated || '未知'}`;
             modal.style.display = 'flex';
+
+            // 4. 调用 MathJax 进行页面上公式的渲染处理
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                MathJax.typesetPromise([bodyDiv]).catch((err) => console.error(err.message));
+            }
         }
 
         function closeModal() {
