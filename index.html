@@ -1143,17 +1143,8 @@
         }
 
         function getImageProxyUrl(imagePath) {
-            let path = imagePath;
-            if (imagePath.includes('gitee.com') && imagePath.includes('/raw/')) {
-                const match = imagePath.match(/\/raw\/[^/]+\/(.*)/);
-                if (match) path = match[1];
-            }
-            // 【核心修复】：按斜杠拆分后再编码，保留原始目录层级，杜绝 Proxy Error (500)
-            const safePath = path.split('/').map(encodeURIComponent).join('/');
-
-            // 注意：如果你发现手机端微信里图片依然加载不出来(变成裂图)，
-            // 建议在这里加上 "?token=my-functional123" 来强行通过图片验证。
-            return `${WORKER_BASE}/images/${safePath}`;
+            // 直接将完整的原链接通过 URL 参数丢给后端，并挂载鉴权 Token 穿透 Nginx
+            return `${WORKER_BASE}/proxy?url=${encodeURIComponent(imagePath)}&token=my-functional123`;
         }
 
         // ---------- 新增：Blob 转换下载处理函数 ----------
