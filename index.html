@@ -817,6 +817,10 @@
             margin-right: 1rem;
         }
 
+        .attachments-list a:hover {
+            text-decoration: underline;
+        }
+
         .last-updated {
             font-size: 0.8rem;
             color: #64748b;
@@ -1142,92 +1146,9 @@
             return await resp.json();
         }
 
-        // ---------- 新增：智能判断 预览/下载 函数 ----------
-        async function previewAttachment(originalUrl) {
-            // 提取扩展名并判断是否可以直接在浏览器中原生预览
-            const ext = originalUrl.split('.').pop().toLowerCase();
-            const previewableExts = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'pdf', 'mp4', 'webm', 'txt'];
-            const isPreviewable = previewableExts.includes(ext);
-
-            let previewTab = null;
-            if (isPreviewable) {
-                // 只有浏览器支持预览的格式，才提早打开新标签页（防拦截）
-                previewTab = window.open('', '_blank');
-                if (previewTab) {
-                    previewTab.document.write(`
-                        <div style="display:flex; justify-content:center; align-items:center; height:100vh; font-family:sans-serif; color:#475569;">
-                            <h2>正在加载预览，请稍候...</h2>
-                        </div>
-                    `);
-                }
-            }
-
-            try {
-                showToast(isPreviewable ? '正在准备预览...' : '正在获取文件...', false);
-                const proxyUrl = getImageProxyUrl(originalUrl);
-
-                // 发送 fetch 请求触发 Nginx 鉴权
-                const resp = await fetch(proxyUrl);
-                if (!resp.ok) {
-                    if (resp.status === 401) throw new Error('鉴权失败 (401)');
-                    if (resp.status === 500) throw new Error('代理服务器报错 (500)');
-                    throw new Error(`获取失败 (${resp.status})`);
-                }
-
-                let blob = await resp.blob();
-
-                // 补全常见 MIME 类型，防止浏览器误判为纯文本
-                const mimeMap = {
-                    'mp4': 'video/mp4',
-                    'png': 'image/png',
-                    'jpg': 'image/jpeg',
-                    'jpeg': 'image/jpeg',
-                    'pdf': 'application/pdf',
-                    'txt': 'text/plain;charset=utf-8',
-                    'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                    'doc': 'application/msword',
-                    'zip': 'application/zip'
-                };
-
-                if (mimeMap[ext]) {
-                    blob = new Blob([blob], { type: mimeMap[ext] });
-                }
-
-                // 生成内存链接，手机电脑通用
-                const blobUrl = URL.createObjectURL(blob);
-
-                if (isPreviewable) {
-                    // 支持预览的格式，渲染在刚打开的标签页中
-                    if (previewTab) {
-                        previewTab.location.href = blobUrl;
-                    } else {
-                        // 如果被部分严苛的浏览器拦截了弹窗，就在当前页跳转
-                        window.location.href = blobUrl;
-                    }
-                } else {
-                    // 对于浏览器无法原生预览的文件（如 docx），执行静默下载
-                    showToast('当前格式不支持在线预览，正在为您下载...', false);
-                    const a = document.createElement('a');
-                    a.style.display = 'none';
-                    a.href = blobUrl;
-
-                    // 提取文件名并清理特殊字符
-                    let cleanFileName = decodeURIComponent(originalUrl);
-                    cleanFileName = cleanFileName.substring(cleanFileName.lastIndexOf('/') + 1).replace(/['"]/g, '');
-                    a.download = cleanFileName || `下载文件.${ext}`;
-
-                    document.body.appendChild(a);
-                    a.click();
-                    setTimeout(() => {
-                        document.body.removeChild(a);
-                        URL.revokeObjectURL(blobUrl);
-                    }, 100);
-                }
-            } catch (err) {
-                console.error('文件处理出错:', err);
-                if (previewTab) previewTab.close(); // 出错时关闭白页
-                showToast(err.message, true);
-            }
+        // 保留给 Markdown 内联图片的代理函数
+        function getImageProxyUrl(imagePath) {
+            return `${WORKER_BASE}/proxy?url=${encodeURIComponent(imagePath)}&token=my-functional123`;
         }
 
         function updateStats(list) {
@@ -1290,17 +1211,17 @@
                 }
                 rawContent = data.answer || '无答案内容';
 
-                // 修改核心：附件渲染 (通过 Blob 下载绕过服务器返回单引号问题)
+                // 核心修改：移除复杂的下载预览，直接使用 a 标签外链新窗口跳转
                 let attachmentsHtml = '';
                 if (data.attachments && data.attachments.length) {
                     attachmentsHtml = '<strong><i class="fas fa-paperclip"></i> 附件：</strong><br>';
                     for (const url of data.attachments) {
                         const decodedUrl = decodeURIComponent(url);
                         let cleanFileName = decodedUrl.substring(decodedUrl.lastIndexOf('/') + 1) || '附件文件';
-                        // 过滤可能包含的单双引号
-                        cleanFileName = cleanFileName.replace(/['"]/g, '');
-                        const safeUrl = url.replace(/'/g, "\\'"); // 防止破坏拼接的字符串
-                        attachmentsHtml += `<a href="javascript:void(0)" onclick="previewAttachment('${safeUrl}')" title="点击预览"><i class="fas fa-eye"></i> 预览：${escapeHtml(cleanFileName)}</a><br>`;
+                        cleanFileName = cleanFileName.replace(/['"]/g, ''); // 过滤单双引号
+
+                        // 直接提供原始外链，让浏览器接管处理
+                        attachmentsHtml += `<a href="${url}" target="_blank" title="在新标签页中访问原文件"><i class="fas fa-external-link-alt"></i> 访问：${escapeHtml(cleanFileName)}</a><br>`;
                     }
                 }
                 attachDiv.innerHTML = attachmentsHtml;
@@ -1338,7 +1259,7 @@
                 contentHtml = contentHtml.replace(/MATHINLINEPLACEHOLDER(\d+)ENDMATH/g, (match, p1) => escapeMath(mathBlocks[p1]));
             }
 
-            // 图片代理替换
+            // 图片代理替换 (Markdown内的直接显示图片依然走代理处理防盗链)
             contentHtml = contentHtml.replace(/!\[.*?\]\((images\/[^)]+)\)/g, (match, relativePath) => {
                 const proxyUrl = getImageProxyUrl(relativePath);
                 return `![图片](${proxyUrl})`;
