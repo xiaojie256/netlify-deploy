@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="referrer" content="no-referrer">
     <title>作业看板 · 动态同步 + 题解系统</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap"
@@ -1177,7 +1177,14 @@
                 }, 100);
             } catch (err) {
                 console.error('Blob 下载失败，回退为直接跳转:', err);
-                window.open(originalUrl, '_blank');
+                // 动态创建一个不带 referer 的 a 标签来跳转
+                const fallbackA = document.createElement('a');
+                fallbackA.href = originalUrl;
+                fallbackA.target = '_blank';
+                fallbackA.rel = 'noreferrer'; // 核心：强制不携带 Referer
+                document.body.appendChild(fallbackA);
+                fallbackA.click();
+                document.body.removeChild(fallbackA);
             }
         }
         // ------------------------------------------------
