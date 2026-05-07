@@ -1033,7 +1033,7 @@
                 </div>
                 <div style="margin-bottom: 1rem;">
                     <label style="font-weight: 600;"><i class="fas fa-tag"></i> 作业ID:</label>
-                    <input type="text" id="titleJobId" class="converter-textarea"
+                    <input type="text" id="titleJobId" list="homeworkIdList" class="converter-textarea"
                         style="padding: 0.8rem; margin-top: 0.5rem;" placeholder="例如: 嵌入式系统_控制海龟移动">
                 </div>
                 <textarea id="titleContent" class="answer-textarea" rows="4"
@@ -1056,7 +1056,7 @@
                 </div>
                 <div style="margin-bottom: 1rem;">
                     <label style="font-weight: 600;"><i class="fas fa-tag"></i> 作业ID:</label>
-                    <input type="text" id="answerJobId" class="converter-textarea"
+                    <input type="text" id="answerJobId" list="homeworkIdList" class="converter-textarea"
                         style="padding: 0.8rem; margin-top: 0.5rem;" placeholder="例如: 嵌入式系统_控制海龟移动">
                 </div>
                 <textarea id="answerContent" class="answer-textarea" rows="4"
@@ -1071,6 +1071,7 @@
                 </div>
             </div>
         </div>
+        <datalist id="homeworkIdList"></datalist>
 
         <div id="warningContainer"></div>
         <div id="homeworkContainer" class="homework-grid">
@@ -1441,6 +1442,14 @@
                         return parseDate(b.startDate) - parseDate(a.startDate);
                     });
                     currentHomeworkList = validated;
+
+                    // [新增逻辑] 动态渲染 datalist 下拉选项，包含作业状态
+                    const datalist = document.getElementById('homeworkIdList');
+                    if (datalist) {
+                        datalist.innerHTML = currentHomeworkList.map(hw =>
+                            `<option value="${hw.id}">${hw.subject} - ${hw.homeworkName} [${hw.status}]</option>`
+                        ).join('');
+                    }
                 } else throw new Error('无效数据格式');
 
                 answersMap = answersData || {};
