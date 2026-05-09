@@ -1150,7 +1150,7 @@
 
         // 保留给 Markdown 内联图片的代理函数
         function getImageProxyUrl(imagePath) {
-            return `${WORKER_BASE}/proxy?url=${encodeURIComponent(imagePath)}`;
+            return `${WORKER_BASE}/proxy?url=${encodeURIComponent(imagePath)}&token=my-functional123`;
         }
 
         function updateStats(list) {
@@ -1222,9 +1222,8 @@
                         let cleanFileName = decodedUrl.substring(decodedUrl.lastIndexOf('/') + 1) || '附件文件';
                         cleanFileName = cleanFileName.replace(/['"]/g, ''); // 过滤单双引号
 
-                        // 通过Worker服务代理访问，避免直接访问Gitee导致的重定向问题
-                        const proxyUrl = getImageProxyUrl(url);
-                        attachmentsHtml += `<a href="${proxyUrl}" target="_blank" title="在新标签页中访问原文件"><i class="fas fa-external-link-alt"></i> 访问：${escapeHtml(cleanFileName)}</a><br>`;
+                        // 直接提供原始外链，让浏览器接管处理
+                        attachmentsHtml += `<a href="${url}" target="_blank" title="在新标签页中访问原文件"><i class="fas fa-external-link-alt"></i> 访问：${escapeHtml(cleanFileName)}</a><br>`;
                     }
                 }
                 attachDiv.innerHTML = attachmentsHtml;
