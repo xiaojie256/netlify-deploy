@@ -1305,7 +1305,12 @@
         function isWithinTimeFilter(homework) {
             if (currentTimeFilter === 'all') return true;
             const startDate = parseDateStr(homework.startDate);
-            if (!startDate) return false;
+            const endDate = parseDateStr(homework.endDate);
+
+            // 🔧 修复：如果没有有效日期，尝试通过截止日期判断
+            if (!startDate && !endDate) return false;
+            if (!startDate) startDate = endDate;  // 用截止日期作为备选
+
             const now = new Date();
             let timeThreshold;
 
@@ -1315,7 +1320,10 @@
                 case 'month': timeThreshold = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate()); break;
                 default: return true;
             }
-            return startDate >= timeThreshold;
+
+            // 🔧 修复：检查开始日期或截止日期是否在时间范围内
+            // 只要有一个日期在时间范围内就显示
+            return (startDate && startDate >= timeThreshold) || (endDate && endDate >= timeThreshold);
         }
 
         function getUniqueSubjects(homeworkList) {
@@ -1329,7 +1337,9 @@
             if (!container) return;
 
             const uniqueSubjects = getUniqueSubjects(currentHomeworkList);
-            let html = '<button class="subject-filter-btn active" data-subject="all"><i class="fas fa-book"></i> 所有科目</button>';
+            // 🔧 修复：根据 currentSubjectFilter 动态设置"所有科目"按钮的 active 状态
+            const isAllActive = currentSubjectFilter === 'all' ? ' active' : '';
+            let html = `<button class="subject-filter-btn${isAllActive}" data-subject="all"><i class="fas fa-book"></i> 所有科目</button>`;
 
             uniqueSubjects.forEach(subject => {
                 const isActive = currentSubjectFilter === subject ? ' active' : '';
