@@ -1262,6 +1262,19 @@
                 contentHtml = contentHtml.replace(/MATHINLINEPLACEHOLDER(\d+)ENDMATH/g, (match, p1) => escapeMath(mathBlocks[p1]));
             }
 
+            // 附件链接代理替换 (将markdown中的Gitee附件链接转换为代理URL，避免防盗链导致的文件名单引号问题)
+            contentHtml = contentHtml.replace(/\[([^\]]+)\]\((https:\/\/gitee\.com\/[^)]+)\)/gi,
+                (match, linkText, url) => {
+                    // 检查URL是否指向文件（包含文件扩展名或使用raw路径）
+                    if (/\.(docx|doc|pdf|txt|zip|rar|7z|ppt|pptx|xls|xlsx|png|jpg|jpeg|gif|bmp|webp|mp4|mp3|avi|mov)$/i.test(url) ||
+                        /\/raw\/master\//i.test(url)) {
+                        const proxyUrl = getImageProxyUrl(url);
+                        return `<a href="${proxyUrl}" target="_blank" title="下载文件"><i class="fas fa-external-link-alt"></i> ${linkText}</a>`;
+                    }
+                    return match; // 非文件链接保持原样
+                }
+            );
+
             // 图片代理替换 (Markdown内的直接显示图片依然走代理处理防盗链)
             contentHtml = contentHtml.replace(/!\[.*?\]\((images\/[^)]+)\)/g, (match, relativePath) => {
                 const proxyUrl = getImageProxyUrl(relativePath);
