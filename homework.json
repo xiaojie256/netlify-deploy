@@ -12,7 +12,7 @@
     "id": "编译原理_作业5_正规式与有限自动机理论",
     "subject": "编译原理",
     "status": "已完成",
-    "homeworkName": "作业5-正规式与有限自动机理论",
+    "homeworkName": "作业5：正规式与有限自动机理论",
     "platform": "学习通",
     "startDate": "2026.3.30",
     "endDate": "2026.4.3"
@@ -28,7 +28,7 @@
   },
   {
     "id": "linux_实验报告_实验4",
-    "subject": "Linux操作系统-数据科学",
+    "subject": "Linux操作系统-数据科学(实验)",
     "status": "已完成",
     "homeworkName": "实验报告-实验4",
     "platform": "雨课堂",
@@ -75,7 +75,7 @@
   "id": "编译原理_正规式与有限自动机理论_下",
   "subject": "编译原理",
   "status": "已完成",
-  "homeworkName": "正规式与有限自动机理论（下）",
+  "homeworkName": "作业6：正规式与有限自动机理论（下）",
   "platform": "学习通",
   "startDate": "2026.4.13",
   "endDate": "2026.4.17"
@@ -118,7 +118,7 @@
 },
 {
   "id": "linux操作系统_数据科学_实验报告_实验5",
-  "subject": "Linux操作系统-数据科学",
+  "subject": "Linux操作系统-数据科学(实验)",
   "status": "已完成",
   "homeworkName": "实验报告-实验5",
   "platform": "雨课堂",
@@ -199,7 +199,7 @@
 },
 {
   "id": "linux操作系统_数据科学_实验报告提交_实验6",
-  "subject": "Linux操作系统-数据科学",
+  "subject": "Linux操作系统-数据科学(实验)",
   "status": "已完成",
   "homeworkName": "实验报告提交 - 实验6",
   "platform": "雨课堂",
@@ -208,8 +208,8 @@
 },
 {
   "id": "嵌入式系统_实验报告1_puppypi初体验",
-  "subject": "嵌入式系统",
-  "status": "未完成",
+  "subject": "嵌入式系统(实验)",
+  "status": "已完成",
   "homeworkName": "实验报告1-PuppyPi初体验",
   "platform": "学习通",
   "startDate": "2026.4.26",
@@ -227,7 +227,7 @@
 {
     "id": "单片机原理与应用_第三次课后作业",
     "subject": "单片机原理与应用",
-    "status": "未完成",
+    "status": "已完成",
     "homeworkName": "第三次课后作业",
     "platform": "学习通",
     "startDate": "2026.4.27",
@@ -253,7 +253,7 @@
 },
 {
   "id": "linux操作系统_数据科学_实验报告提交_实验7",
-  "subject": "Linux操作系统-数据科学",
+  "subject": "Linux操作系统-数据科学(实验)",
   "status": "已完成",
   "homeworkName": "实验报告提交 - 实验7",
   "platform": "雨课堂",
@@ -266,7 +266,151 @@
   "status": "已完成",
   "homeworkName": "作业10:自下而上语法分析方法概述",
   "platform": "学习通",
-  "startDate": "2026.4.28",
-  "endDate": "2026.5.5"
+  "startDate": "2026.5.9",
+  "endDate": "2026.5.13"
+},
+{
+  "id": "软件工程_第6章_结构化软件设计",
+  "subject": "软件工程",
+  "status": "已完成",
+  "homeworkName": "第6章 结构化软件设计",
+  "platform": "学习通",
+  "startDate": "2026.4.30",
+  "endDate": "2026.5.6"
+},
+{
+  "id": "软件工程_第7章_面向对象方法与uml",
+  "subject": "软件工程",
+  "status": "已完成",
+  "homeworkName": "第7章 面向对象方法与UML",
+  "platform": "学习通",
+  "startDate": "2026.5.1",
+  "endDate": "2026.5.6"
+},
+{
+  "id": "软件工程_第7章_面向对象方法与uml_用例图",
+  "subject": "软件工程",
+  "status": "已完成",
+  "homeworkName": "第7章 面向对象方法与UML - 用例图",
+  "platform": "学习通",
+  "startDate": "2026.5.1",
+  "endDate": "2026.5.7"
+},
+{
+  "id": "智能终端开发技术_实验_实验一",
+  "subject": "智能终端开发技术(实验)",
+  "status": "已完成",
+  "homeworkName": "实验一",
+  "platform": "学习通",
+  "startDate": "2026.4.30",
+  "endDate": "2026.5.16"
+},
+{
+  "id": "智能终端开发技术_实验_实验二_arkts语言基础",
+  "subject": "智能终端开发技术(实验)",
+  "status": "未完成",
+  "homeworkName": "实验二 arkTS语言基础",
+  "platform": "学习通",
+  "startDate": "2026.5.7",
+  "endDate": "暂定"
+},
+{
+  "id": "软件工程_软件工程_实验软件安装",
+  "subject": "软件工程",
+  "status": "已完成",
+  "homeworkName": "《软件工程》实验软件安装",
+  "platform": "学习通",
+  "startDate": "2026.5.6",
+  "endDate": "2026.5.7"
+},
+{
+  "id": "大学生职业发展与就业创业指导_提交实践教学活动总结",
+  "subject": "大学生职业发展与就业创业指导",
+  "status": "未完成",
+  "homeworkName": "提交实践教学活动总结",
+  "platform": "学习通",
+  "startDate": "2026.5.6",
+  "endDate": "2026.5.28"
+},
+{
+  "id": "大学生职业发展与就业创业指导_就业简历",
+  "subject": "大学生职业发展与就业创业指导",
+  "status": "未完成",
+  "homeworkName": "就业简历",
+  "platform": "学习通",
+  "startDate": "2026.5.6",
+  "endDate": "暂定"
+},
+{
+  "id": "软件工程_实验_实验一",
+  "subject": "软件工程(实验)",
+  "status": "已完成",
+  "homeworkName": "实验一",
+  "platform": "学习通",
+  "startDate": "2026.5.8",
+  "endDate": "2026.5.8"
+},
+{
+  "id": "嵌入式系统_实验_实验报告2_armpi初体验",
+  "subject": "嵌入式系统(实验)",
+  "status": "未完成",
+  "homeworkName": "实验报告2-ArmPi初体验",
+  "platform": "学习通",
+  "startDate": "2026.5.9",
+  "endDate": "2026.5.16"
+},
+{
+  "id": "编译原理_作业11_算符优先分析法",
+  "subject": "编译原理",
+  "status": "已完成",
+  "homeworkName": "作业11: 算符优先分析法",
+  "platform": "学习通",
+  "startDate": "2026.5.11",
+  "endDate": "2026.5.15"
+},
+{
+  "id": "嵌入式系统_实验_实验报告3_电脑端连接及puppypi步态调节",
+  "subject": "嵌入式系统(实验)",
+  "status": "未完成",
+  "homeworkName": "实验报告3-电脑端连接及PuppyPi步态调节",
+  "platform": "学习通",
+  "startDate": "2026.5.11",
+  "endDate": "2026.5.18"
+},
+{
+  "id": "智能终端开发技术_实验_实验三_通用组件属性的应用",
+  "subject": "智能终端开发技术(实验)",
+  "status": "未完成",
+  "homeworkName": "实验三 通用组件属性的应用",
+  "platform": "学习通",
+  "startDate": "2026.5.7",
+  "endDate": "暂定"
+},
+{
+  "id": "智能终端开发技术_实验_实验四",
+  "subject": "智能终端开发技术(实验)",
+  "status": "未完成",
+  "homeworkName": "实验四",
+  "platform": "学习通",
+  "startDate": "2026.5.7",
+  "endDate": "暂定"
+},
+{
+  "id": "linux操作系统_数据科学_8_7_习题",
+  "subject": "Linux操作系统-数据科学",
+  "status": "已完成",
+  "homeworkName": "8.7 习题",
+  "platform": "雨课堂",
+  "startDate": "2026.5.11",
+  "endDate": "2026.5.15"
+},
+{
+  "id": "编译原理_实验_表达式语言语法分析器的设计",
+  "subject": "编译原理(实验)",
+  "status": "已完成",
+  "homeworkName": "表达式语言语法分析器的设计",
+  "platform": "学习通",
+  "startDate": "2026.5.12",
+  "endDate": "2026.5.15"
 }
 ]

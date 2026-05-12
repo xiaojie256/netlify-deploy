@@ -17,13 +17,209 @@
     "lastUpdated": "2026-03-31"
   },
   "编译原理_作业5_正规式与有限自动机理论": {
+    "answer": "非终态组{0,1,2} 终态组{3,4}\n\n{0,1,2}a = {1,3}不属于任何一个已有分组\n而{0,2}a = {1} {1}a = {3}\n故{0,1,2}可再分为{0,2}和{1}\n\n{0,2}b = {2}\n故{0,2}无需再分\n\n{3,4}a = {1,3}不属于任何一个已有分组\n分为{3}和{4}\n\n故5状态共分为{0,2},{1},{3},{4}四组\n令状态0代表{0,2}\n\n说明:图1为第一题，第二题顺序为:图2,3,4,文字,图5",
+    "attachments": [
+      "https://gitee.com/pepsi-666/xiao-jie/raw/master/编译原理/作业5/1.png",
+      "https://gitee.com/pepsi-666/xiao-jie/raw/master/编译原理/作业5/2(2).png",
+      "https://gitee.com/pepsi-666/xiao-jie/raw/master/编译原理/作业5/2(2.1).png",
+      "https://gitee.com/pepsi-666/xiao-jie/raw/master/编译原理/作业5/2(2.2).png",
+      "https://gitee.com/pepsi-666/xiao-jie/raw/master/编译原理/作业5/2(2.3).png"
+    ],
+    "lastUpdated": "2026-03-31"
+  },
+  "linux操作系统_数据科学_3_13习题": {
+  "answer": "1.a\n2.ipconfig\n3.sudo\n4.whoami\n5.id\n6.who\n7.last\n8.date\n9.cal\n10.bc\n11.passwd\n12.sudo\n13.bash\n14.pwd\n15.ls\n16.管道\n17.tree\n18.cd\n19.echo\n20.printf\n21.cat\n22.sudo\n23.--help\n24.man\n25.info\n26.sync\n27.shutdown\n28.-h\n29.now\n30.+15\n31.-c\n32-35.错对对错\n36-43.CADADCDA",
+  "attachments": [],
+  "lastUpdated": "2026-04-03"
+},
+"软件工程_需求分析": {
+  "answer": "BBCBDAD",
+  "attachments": [],
+  "lastUpdated": "2026-04-05"
+},
+"编译原理_实验_winflexbison安装与环境配置": {
   "answer": "(空答案)",
   "attachments": [
-    "https://gitee.com/pepsi-666/xiao-jie/raw/master/编译原理/理论/作业5/1.png",
-    "https://gitee.com/pepsi-666/xiao-jie/raw/master/编译原理/理论/作业5/2(1).png",
-    "https://gitee.com/pepsi-666/xiao-jie/raw/master/编译原理/理论/作业5/2(2).png",
-    "https://gitee.com/pepsi-666/xiao-jie/raw/master/编译原理/理论/作业5/2(2.1).png"
+      "https://gitee.com/pepsi-666/xiao-jie/raw/master/编译原理/实验/WinFlexBison安装与环境配置/三幅图.png"
   ],
-  "lastUpdated": "2026-03-31"
+  "lastUpdated": "2026-04-14"
+},
+"编译原理_实验_flex基础应用": {
+  "answer": "提交图片即可满分",
+  "attachments": [
+    "https://gitee.com/pepsi-666/xiao-jie/raw/master/编译原理/实验/flex基础应用/提交001_l文件截图.png",
+    "https://gitee.com/pepsi-666/xiao-jie/raw/master/编译原理/实验/flex基础应用/提交002_生成C文件.png",
+    "https://gitee.com/pepsi-666/xiao-jie/raw/master/编译原理/实验/flex基础应用/提交003_生成exe.png",
+    "https://gitee.com/pepsi-666/xiao-jie/raw/master/编译原理/实验/flex基础应用/提交004_标准输入输出测试.png",
+    "https://gitee.com/pepsi-666/xiao-jie/raw/master/编译原理/实验/flex基础应用/提交005_命令行运行.png",
+    "https://gitee.com/pepsi-666/xiao-jie/raw/master/编译原理/实验/flex基础应用/提交005_输出内容.png",
+    "https://gitee.com/pepsi-666/xiao-jie/raw/master/编译原理/实验/flex基础应用/提交005_输入文件内容.png",
+    "https://gitee.com/pepsi-666/xiao-jie/raw/master/编译原理/实验/flex基础应用/correct.txt",
+    "https://gitee.com/pepsi-666/xiao-jie/raw/master/编译原理/实验/flex基础应用/error.txt",
+    "https://gitee.com/pepsi-666/xiao-jie/raw/master/编译原理/实验/flex基础应用/output_correct.txt",
+    "https://gitee.com/pepsi-666/xiao-jie/raw/master/编译原理/实验/flex基础应用/output_error.txt"
+
+  ],
+  "lastUpdated": "2026-04-14"
+},
+"编译原理_正规式与有限自动机理论_下": {
+  "answer": "(空答案)",
+  "attachments": [
+    "https://gitee.com/pepsi-666/xiao-jie/raw/master/编译原理/作业6/整合提交/第一题.png",
+    "https://gitee.com/pepsi-666/xiao-jie/raw/master/编译原理/作业6/整合提交/第二题.png"
+  ],
+  "lastUpdated": "2026-04-14"
+},
+"linux操作系统_数据科学_5_9习题": {  
+  "answer": "1.0\n2.root\n3.系统账户\n4.useradd -m -r -s\n5.passwd\n6.shadow\n7.passwd -l -u\n8.usermod -g -G\n9.userdel -r\n10.groupadd\n11.gpasswd -A -a -d\n12.groupmod\n13.groupdel\n14.newgrp\n15.chmod -R\n16.chown\n17.umask\n18.su sudo\n19-25.错错对错对对对\n26-30.BABDA\n31-37.CCBAADC",  
+  "attachments": [],  
+  "lastUpdated": "2026-04-15"  
+},
+"软件工程_结构化分析作业_数据流图": {
+  "answer": "答案不固定，合理参考",
+  "attachments": [
+    "https://gitee.com/pepsi-666/xiao-jie/raw/master/软件工程/理论/结构化分析作业-数据流图/完整.png"
+  ],
+  "lastUpdated": "2026-04-18"
+},
+"编译原理_mini_c语言词法分析器设计": {
+  "answer": "(空答案)",
+  "attachments": [
+    "https://gitee.com/pepsi-666/xiao-jie/raw/master/编译原理/实验/Mini-C语言的词法规则/071223126.docx"
+  ],
+  "lastUpdated": "2026-04-21"
+},
+"智能终端开发技术_作业1": {
+  "answer": "1-4.对错对对\n5-7.CAB\n8.BC\n9.ABD\n10.ABCD",
+  "attachments": [],
+  "lastUpdated": "2026-04-21"
+},
+"智能终端开发技术_作业2": {
+  "answer": "1-3.ABA\n4.CD\n5.ABCDE\n6.ABCDEF\n7.错",
+  "attachments": [],
+  "lastUpdated": "2026-04-21"
+},
+"智能终端开发技术_作业3": {
+  "answer": "1.对\n2.对\n3.B\n4.B\n5.ABE",
+  "attachments": [],
+  "lastUpdated": "2026-04-21"
+},
+"智能终端开发技术_作业4": {
+  "answer": "1.错\n2.BC\n3.D\n4.C\n5.C",
+  "attachments": [],
+  "lastUpdated": "2026-04-21"
+},
+"linux操作系统_数据科学_6_8_习题": {
+  "answer": "1.依赖\n2.yum\n3.dnf\n4.check-update\n5.list\n6.search\n7.provides\n8.info\n9.install\n10.remove\n11.upgrade\n12.apt\n13.pkg\n14.-qa\n15.dpkg\n16-22.对对错错对错对\n23-26.ABBA",
+  "attachments": [],
+  "lastUpdated": "2026-04-21"
+},
+"编译原理_作业7_自上而下语法分析方法概述": {
+  "answer": "1.\n排序顺序:S,A,B\n\n对于S->AB\n不存在直接左递归，不存在间接左递归\n故保持不变\n\n对于A->bB|Aa\n存在直接左递归，消除后:\nA->bBA'\nA'->aA'|ε\n\n对于B->Sb|a\n不存在直接左递归,代入S后得到:\nB->ABb|a\n代入A后得到:\nB->bBA'Bb|a\n\n综上:\nS->AB\nA->bBA'\nA'->aA'|ε\nB->bBA'Bb|a\n\n2.\n排序顺序:S,N\n\n对于S->Sa|Nb|c\n存在直接左递归,消除后:\nS->NbS'|cS'\nS'->aS'|ε\n\n对于N->Sd|Ne|f\n代入S后得:\nN->NbS'd|cS'd|Ne|f\n存在直接左递归,消除后:\nN->cS'dN'|fN'\nN'->bS'dN'|eN'|ε\n\n综上:\nS->NbS'|cS'\nS'->aS'|ε\nN->cS'dN'|fN'\nN'->bS'dN'|eN'|ε",
+  "attachments": [],
+  "lastUpdated": "2026-04-22"
+},
+"编译原理_作业8_ll_1_分析方法": {
+  "answer": "(1).\n文法存在直接左递归,故该文法不是 LL(1) 文法\n(2).\nFIRST(aA)∩FIRST(a)={a}≠∅,故该文法不是 LL(1) 文法\n(3).\n无左递归,非终结符的各个产生式的候选首字符集两两不相交\nFIRST(A)={a,ε}，FOLLOW(A)=FIRST(Bc)={b,c}。两者交集为空。\nFIRST(B)={b,ε}，FOLLOW(B)={c}。两者交集为空。\n故该文法为 LL(1) 文法\n(4).\nFIRST(A)={a,b,ϵ},FOLLOW(A)={b},FIRST(A)∩FOLLOW(A)={b}≠∅，故该文法不是LL（1）文法 <br><br> 注:第一题如图，第二题为文字",
+  "attachments": [
+    "https://gitee.com/pepsi-666/xiao-jie/raw/master/编译原理/作业8/第一题.png"
+  ],
+  "lastUpdated": "2026-04-22"
+},
+"嵌入式系统_控制海龟移动": {
+  "answer": "点击后即下载，去除单引号即可放映",
+  "attachments": [
+    "https://gitee.com/pepsi-666/xiao-jie/raw/master/嵌入式/控制海龟移动.mp4"
+  ],
+  "lastUpdated": "2026-04-24"
+},
+"编译原理_随堂练习2026_4_27": {
+  "answer": "(空答案)",
+  "attachments": [
+    "https://gitee.com/pepsi-666/xiao-jie/raw/master/编译原理/随堂练习4-27/随堂练习.png"
+  ],
+  "lastUpdated": "2026-04-27"
+},
+"linux操作系统_数据科学_7_8习题": {
+  "answer": "1.命令模式 编辑模式\n2.3G\n3.dd\n4.yy\n5.v\n6-10.对错对错错\n11-15.BACDB",
+  "attachments": [],
+  "lastUpdated": "2026-04-28"
+},
+"编译原理_作业9_预测分析方法": {
+  "answer": "(空答案)",
+  "attachments": [
+    "https://gitee.com/pepsi-666/xiao-jie/raw/master/编译原理/作业9-预测分析方法/作业9第1题.png",
+    "https://gitee.com/pepsi-666/xiao-jie/raw/master/编译原理/作业9-预测分析方法/作业9第2题.png"
+  ],
+  "lastUpdated": "2026-04-28"
+},
+"编译原理_作业10_自下而上语法分析方法概述": {
+  "answer": "(空答案)",
+  "attachments": [
+    "https://gitee.com/pepsi-666/xiao-jie/raw/master/编译原理/作业10-自下而上语法分析方法概述/作业10.png"
+  ],
+  "lastUpdated": "2026-04-29"
+},
+"软件工程_第7章_面向对象方法与uml": {
+  "answer": "1-5： D、B、D、D、B\n6-10： B、B、D、C、B",
+  "attachments": [],
+  "lastUpdated": "2026-05-01"
+},
+"软件工程_第6章_结构化软件设计": {
+  "answer": "1-6：错、错、错、对、错、错  \n7-10：C、C、C、D",
+  "attachments": [],
+  "lastUpdated": "2026-05-01"
+},
+"嵌入式系统_实验报告1_puppypi初体验": {
+  "answer": "(空答案)",
+  "attachments": [
+    "https://gitee.com/pepsi-666/xiao-jie/raw/master/嵌入式/实验/实验报告1-PuppyPi初体验.docx"
+  ],
+  "lastUpdated": "2026-05-01"
+},
+"软件工程_第7章_面向对象方法与uml_用例图": {
+  "answer": "(空答案)",
+  "attachments": [
+    "https://gitee.com/pepsi-666/xiao-jie/raw/master/软件工程/理论/第七章/用例图.png"
+  ],
+  "lastUpdated": "2026-05-05"
+},
+"软件工程_软件工程_实验软件安装": {
+  "answer": "网站:move.xiaojie256.top\n取件码:47986\n注:网站带宽有限，文件有效期2日",
+  "attachments": [],
+  "lastUpdated": "2026-05-07"
+},
+"软件工程_实验_实验一": {
+  "answer": "(空答案)",
+  "attachments": [
+    "https://gitee.com/pepsi-666/xiao-jie/raw/master/软件工程/实验/实验1/软件工程实验一_软件项目计划_实验报告.docx",
+    "https://gitee.com/pepsi-666/xiao-jie/raw/master/软件工程/实验/实验1/“‘墨韵’读书会书籍共享管理平台.mpp",
+    "https://gitee.com/pepsi-666/xiao-jie/raw/master/软件工程/实验/实验1/办公室语音通知系统.mpp"
+  ],
+  "lastUpdated": "2026-05-08"
+},
+"单片机原理与应用_第三次课后作业": {
+  "answer": "一、 目的功能\n\n实时计数：检测独立按键的按下动作，每次按下并释放后，计数值加1。\n\n数码管显示：将当前的计数值（0-99）实时显示在两位数码管上。\n\n溢出处理：当计数达到99后，再次按下按键，计数器归零并重新开始计数。\n\n二、 设计思路\n\n硬件资源分配：\n\n按键输入：使用 P3.2 引脚连接一个轻触按键，按键另一端接地（按下时为低电平）。\n\n数码管段选（显示内容）：使用 P1 端口连接两位数码管的 a~dp 段（需加限流电阻）。\n\n数码管位选（控制哪一位亮）：使用 P2.0 和 P2.1 分别控制十位和个位的公共端。\n\n数码管类型：采用共阴极数码管（段选输入高电平点亮，位选输入低电平导通）。\n\n软件核心逻辑：\n\n按键消抖：机械按键在按下和松开时会产生几十毫秒的电平抖动。需要通过“检测到低电平 -> 延时10ms -> 再次检测”的软件消抖机制来避免误触发。\n\n松手检测：为了防止长按按键导致数字疯狂跳动，必须在程序中加入 while(!KEY) 等待按键释放的逻辑，确保一次按下只计一次数。\n\n动态扫描显示：由于两位数码管共用 P1 端口的段选数据，需要利用人眼的“视觉暂留”效应。快速交替显示十位和个位（每位点亮几毫秒），视觉上就会认为是同时点亮的。\n\n三、 代码实现\n\n#include \n\nsbit KEY = P3^2;\n\nsbit DIG1 = P2^0;\n\nsbit DIG2 = P2^1;\n\nunsigned char code seg_table[] = {\n\n0x3F, 0x06, 0x5B, 0x4F, 0x66,\n\n0x6D, 0x7D, 0x07, 0x7F, 0x6F\n\n};\n\nunsigned char count = 0;\n\nvoid delay_ms(unsigned int ms) {\n\nunsigned int i, j;\n\nfor(i = ms; i > 0; i--)\n\nfor(j = 110; j > 0; j--);\n\n}\n\nvoid display(unsigned char num) {\n\nP1 = seg_table[num / 10];\n\nDIG1 = 0;\n\nDIG2 = 1;\n\ndelay_ms(2);\n\nP1 = 0x00;\n\nP1 = seg_table[num % 10];\nDIG1 = 1;\nDIG2 = 0;\ndelay_ms(2);\nP1 = 0x00;\n\n\n}\n\nvoid main() {\n\nKEY = 1;\n\nwhile(1) {\n    display(count);\n\t    if (KEY == 0) {\n\t        delay_ms(10);\n\t        if (KEY == 0) {\n\t            count++;\n\t            if (count > 99) {\n\t            count = 0;\n            }\n            while (KEY == 0) {\n                display(count); \n            }\n        }\n    }\n}\n\n}",
+  "attachments": [],
+  "lastUpdated": "2026-05-08"
+},
+"编译原理_作业11_算符优先分析法": {
+  "answer": "(空答案)",
+  "attachments": [
+    "https://gitee.com/pepsi-666/xiao-jie/raw/master/编译原理/作业11 算符优先分析法/算符优先.png"
+  ],
+  "lastUpdated": "2026-05-11"
+},
+"编译原理_实验_表达式语言语法分析器的设计": {
+  "answer": "(空答案)",
+  "attachments": [
+    "https://gitee.com/pepsi-666/xiao-jie/raw/master/编译原理/实验/表达式语言语法分析器的设计/表达式语言语法分析器实验报告.docx"
+  ],
+  "lastUpdated": "2026-05-12"
+},
+"linux操作系统_数据科学_8_7_习题": {
+  "answer": "1.service port 应答系统\n2.root\n3.系统账户\n4.useradd -m -r -s\n5.passwd\n6.shadow\n7.passwd -l -u\n8.usermod -g -G\n9.userdel -r\n10.groupadd\n11.gpasswd -A -a -d\n12.groupmod\n13.groupdel\n14.newgrp\n15.chmod -R\n16.chown\n17.umask\n18.su sudo\n19-25.错错对错对对对\n26.AB\n27-30.ABDA\n31-37.CCBAADC",
+  "attachments": [],
+  "lastUpdated": "2026-05-12"
 }
 }

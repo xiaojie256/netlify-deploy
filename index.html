@@ -1262,15 +1262,16 @@
                 contentHtml = contentHtml.replace(/MATHINLINEPLACEHOLDER(\d+)ENDMATH/g, (match, p1) => escapeMath(mathBlocks[p1]));
             }
 
-            // 附件链接代理替换 (将markdown中的Gitee附件链接转换为代理URL，避免防盗链导致的文件名单引号问题)
-            contentHtml = contentHtml.replace(/\[([^\]]+)\]\((https:\/\/gitee\.com\/[^)]+)\)/gi,
-                (match, linkText, url) => {
+            // 附件链接代理替换 (将marked渲染后的Gitee文件链接转换为代理URL，避免防盗链导致的文件名单引号问题)
+            // 注意：marked.parse()已将 [text](url) 转为 <a href="url">text</a>，所以需匹配HTML格式
+            contentHtml = contentHtml.replace(/<a\s+href="(https:\/\/gitee\.com\/[^"]+)"[^>]*>([\s\S]*?)<\/a>/gi,
+                (match, url, linkContent) => {
                     // 检查URL是否指向文件（包含文件扩展名或使用raw路径）
                     if (/\.(docx|doc|pdf|txt|zip|rar|7z|ppt|pptx|xls|xlsx|png|jpg|jpeg|gif|bmp|webp|mp4|mp3|avi|mov)$/i.test(url) ||
                         /\/raw\/master\//i.test(url)) {
                         const proxyUrl = getImageProxyUrl(url);
-                        const cleanLinkText = linkText.replace(/['"]/g, '');
-                        return `<a href="${proxyUrl}" target="_blank" title="下载文件"><i class="fas fa-external-link-alt"></i> ${cleanLinkText}</a>`;
+                        const cleanLinkContent = linkContent.replace(/['"]/g, '');
+                        return `<a href="${proxyUrl}" target="_blank" title="下载文件"><i class="fas fa-external-link-alt"></i> ${cleanLinkContent}</a>`;
                     }
                     return match; // 非文件链接保持原样
                 }
@@ -1302,6 +1303,46 @@
             // 调用 MathJax 进行页面上公式的渲染处理
             if (window.MathJax && window.MathJax.typesetPromise) {
                 MathJax.typesetPromise([bodyDiv]).catch((err) => console.error(err.message));
+            }
+
+            // 为模态框内的代理链接绑定下载（去除 Worker 返回的引号包装）
+            modal.querySelectorAll(`a[href*="${WORKER_BASE}/proxy"]`).forEach(link => {
+                link.removeAttribute('target');
+                link.style.cursor = 'pointer';
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const proxyUrl = link.getAttribute('href');
+                    const urlMatch = proxyUrl.match(/[?&]url=([^&]+)/);
+                    const rawUrl = urlMatch ? decodeURIComponent(urlMatch[1]) : proxyUrl;
+                    downloadFile(proxyUrl, rawUrl);
+                });
+            });
+        }
+
+        // 通过代理下载文件（去除 Worker 返回的 JSON 引号包装）
+        async function downloadFile(proxyUrl, rawUrl) {
+            try {
+                const resp = await fetch(proxyUrl);
+                if (!resp.ok) throw new Error(`下载失败 (${resp.status})`);
+                let text = await resp.text();
+                // Worker 可能对文本内容做了 JSON.stringify 包装，需去除首尾引号
+                if ((text.startsWith('"') && text.endsWith('"')) || (text.startsWith("'") && text.endsWith("'"))) {
+                    text = text.slice(1, -1).replace(/\\n/g, '\n').replace(/\\t/g, '\t').replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+                }
+                const blob = new Blob([text]);
+                const decodedUrl = decodeURIComponent(rawUrl);
+                let fileName = decodedUrl.substring(decodedUrl.lastIndexOf('/') + 1) || '下载文件';
+                fileName = fileName.replace(/['"]/g, '');
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(a.href);
+                showToast('下载已开始: ' + fileName);
+            } catch (err) {
+                showToast('下载失败: ' + err.message, true);
             }
         }
 
