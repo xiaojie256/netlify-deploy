@@ -864,6 +864,113 @@
             gap: 0.5rem;
         }
 
+        /* 公告栏样式 */
+        .announcement-bar {
+            display: none;
+            margin-bottom: 2rem;
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            position: relative;
+        }
+
+        .announcement-bar.show {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .announcement-bar.info {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border-color: #93c5fd;
+            color: #1e40af;
+        }
+
+        .announcement-bar.warning {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-color: #fcd34d;
+            color: #92400e;
+        }
+
+        .announcement-bar.success {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border-color: #6ee7b7;
+            color: #065f46;
+        }
+
+        .announcement-bar.error {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border-color: #fca5a5;
+            color: #991b1b;
+        }
+
+        body.dark .announcement-bar.info {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%);
+            border-color: #3b82f6;
+            color: #bfdbfe;
+        }
+
+        body.dark .announcement-bar.warning {
+            background: linear-gradient(135deg, #78350f 0%, #92400e 100%);
+            border-color: #f59e0b;
+            color: #fde68a;
+        }
+
+        body.dark .announcement-bar.success {
+            background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+            border-color: #10b981;
+            color: #a7f3d0;
+        }
+
+        body.dark .announcement-bar.error {
+            background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%);
+            border-color: #f87171;
+            color: #fecaca;
+        }
+
+        .announcement-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+            margin-top: 0.1rem;
+        }
+
+        .announcement-content {
+            flex: 1;
+        }
+
+        .announcement-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .announcement-text {
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .announcement-close {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.5rem;
+            transition: background 0.2s;
+            color: inherit;
+            flex-shrink: 0;
+        }
+
+        .announcement-close:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark .announcement-close:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
         footer {
             text-align: center;
             margin-top: 4rem;
@@ -939,6 +1046,16 @@
         <div class="header">
             <h1><i class="fas fa-tasks"></i> 作业看板 · 题解系统</h1>
             <p>数据源 GitHub | 支持查看题目与答案 | 智能生成工具</p>
+        </div>
+
+        <!-- 公告栏 -->
+        <div id="announcementBar" class="announcement-bar info">
+            <i id="announcementIcon" class="fas fa-bullhorn announcement-icon"></i>
+            <div class="announcement-content">
+                <div id="announcementTitle" class="announcement-title">公告</div>
+                <div id="announcementText" class="announcement-text">加载中...</div>
+            </div>
+            <button id="announcementClose" class="announcement-close" title="关闭公告">&times;</button>
         </div>
 
         <div class="controls">
@@ -1102,6 +1219,8 @@
 
         // ---------- 全局变量 ----------
         const WORKER_BASE = "https://api.xiaojie256.top";   // 替换为实际 Worker 地址
+
+        let announcementData = null;
 
         let currentHomeworkList = [];
         let answersMap = {};
@@ -1728,10 +1847,72 @@
             document.getElementById('copyTitleJsonBtn').addEventListener('click', () => latestTitleJson ? copyToClipboard(latestTitleJson, '题目JSON已复制') : showToast('无内容', true));
         }
 
+        // ---------- 公告功能 ----------
+        async function loadAnnouncement() {
+            try {
+                const data = await fetchJsonViaWorker('announcement.json');
+                announcementData = data;
+
+                if (!data || !data.enabled) {
+                    hideAnnouncement();
+                    return;
+                }
+
+                const bar = document.getElementById('announcementBar');
+                const title = document.getElementById('announcementTitle');
+                const text = document.getElementById('announcementText');
+                const icon = document.getElementById('announcementIcon');
+
+                // 设置类型样式
+                const type = data.type || 'info';
+                bar.className = `announcement-bar ${type} show`;
+
+                // 设置图标
+                const iconMap = {
+                    info: 'fa-bullhorn',
+                    warning: 'fa-exclamation-triangle',
+                    success: 'fa-check-circle',
+                    error: 'fa-times-circle'
+                };
+                icon.className = `fas ${iconMap[type] || 'fa-bullhorn'} announcement-icon`;
+
+                // 设置内容
+                title.textContent = data.title || '公告';
+                text.textContent = data.content || '';
+            } catch (err) {
+                console.log('公告加载失败:', err.message);
+                hideAnnouncement();
+            }
+        }
+
+        function hideAnnouncement() {
+            const bar = document.getElementById('announcementBar');
+            bar.classList.remove('show');
+            bar.style.display = 'none';
+        }
+
+        function initAnnouncement() {
+            const closeBtn = document.getElementById('announcementClose');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    hideAnnouncement();
+                    // 可选：保存到本地存储，刷新后不再显示
+                    if (announcementData) {
+                        localStorage.setItem('announcementClosed', announcementData.lastUpdated || 'true');
+                    }
+                });
+            }
+        }
+
         async function init() {
             detectDarkMode();
             bindFilters();
             refreshBtn.addEventListener('click', () => fetchHomeworkData());
+
+            // 初始化公告功能
+            initAnnouncement();
+            await loadAnnouncement();
+
             await fetchHomeworkData();
             initConverterAndHelper();
 
