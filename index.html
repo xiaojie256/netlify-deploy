@@ -1424,21 +1424,33 @@
                 MathJax.typesetPromise([bodyDiv]).catch((err) => console.error(err.message));
             }
 
-            // 为模态框内的代理链接绑定下载（去除 Worker 返回的引号包装）
+            // 为模态框内的代理链接绑定动作（智能分流：图片立刻原生预览，文件走后台下载）
             modal.querySelectorAll(`a[href*="${WORKER_BASE}/proxy"]`).forEach(link => {
-                link.removeAttribute('target');
-                link.style.cursor = 'pointer';
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const proxyUrl = link.getAttribute('href');
-                    const urlMatch = proxyUrl.match(/[?&]url=([^&]+)/);
-                    const rawUrl = urlMatch ? decodeURIComponent(urlMatch[1]) : proxyUrl;
-                    downloadFile(proxyUrl, rawUrl);
-                });
+                const proxyUrl = link.getAttribute('href');
+                const urlMatch = proxyUrl.match(/[?&]url=([^&]+)/);
+                const rawUrl = urlMatch ? decodeURIComponent(urlMatch[1]) : proxyUrl;
+                const decodedUrl = decodeURIComponent(rawUrl);
+
+                // 1. 智能检测链接内是否包含图片后缀
+                const isImg = /\.(png|jpg|jpeg|gif|bmp|webp|svg)/i.test(decodedUrl);
+
+                if (isImg) {
+                    // 🚀 如果是图片，直接放行！让它在新标签页秒开，享受 Nginx 缓存和浏览器的流式加载
+                    link.setAttribute('target', '_blank');
+                    link.style.cursor = 'zoom-in';
+                    // 彻底移除 e.preventDefault() 和 downloadFile 拦截
+                } else {
+                    // 2. 如果是 docx/pdf 等常规文件，继续保留你原有的防损坏下载逻辑
+                    link.removeAttribute('target');
+                    link.style.cursor = 'pointer';
+                    link.onclick = (e) => {
+                        e.preventDefault();
+                        downloadFile(proxyUrl, rawUrl);
+                    };
+                }
             });
         }
 
-        // 通过代理下载文件（去除 Worker 返回的 JSON 引号包装）
         // 通过代理下载/预览文件（修复二进制损坏与图片预览问题）
         async function downloadFile(proxyUrl, rawUrl) {
             try {
