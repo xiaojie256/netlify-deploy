@@ -1439,19 +1439,29 @@
         }
 
         // 通过代理下载文件（去除 Worker 返回的 JSON 引号包装）
+        // 通过代理下载/预览文件（修复二进制损坏与图片预览问题）
         async function downloadFile(proxyUrl, rawUrl) {
             try {
                 const resp = await fetch(proxyUrl);
-                if (!resp.ok) throw new Error(`下载失败 (${resp.status})`);
-                let text = await resp.text();
-                // Worker 可能对文本内容做了 JSON.stringify 包装，需去除首尾引号
-                if ((text.startsWith('"') && text.endsWith('"')) || (text.startsWith("'") && text.endsWith("'"))) {
-                    text = text.slice(1, -1).replace(/\\n/g, '\n').replace(/\\t/g, '\t').replace(/\\"/g, '"').replace(/\\\\/g, '\\');
-                }
-                const blob = new Blob([text]);
+                if (!resp.ok) throw new Error(`请求失败 (${resp.status})`);
+
+                // ⚡ 核心修复 1：使用 blob() 接收原始二进制流，彻底解决文件损坏问题
+                const blob = await resp.blob();
+
                 const decodedUrl = decodeURIComponent(rawUrl);
                 let fileName = decodedUrl.substring(decodedUrl.lastIndexOf('/') + 1) || '下载文件';
                 fileName = fileName.replace(/['"]/g, '');
+
+                // ⚡ 核心修复 2：判断如果是图片后缀，直接在新标签页预览，不触发下载
+                const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp', '.svg'];
+                const ext = fileName.toLowerCase().substring(fileName.lastIndexOf('.'));
+                if (imageExtensions.includes(ext)) {
+                    const viewUrl = URL.createObjectURL(blob);
+                    window.open(viewUrl, '_blank');
+                    return;
+                }
+
+                // 非图片文件正常走下载逻辑
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(blob);
                 a.download = fileName;
@@ -1461,7 +1471,7 @@
                 URL.revokeObjectURL(a.href);
                 showToast('下载已开始: ' + fileName);
             } catch (err) {
-                showToast('下载失败: ' + err.message, true);
+                showToast('操作失败: ' + err.message, true);
             }
         }
 
